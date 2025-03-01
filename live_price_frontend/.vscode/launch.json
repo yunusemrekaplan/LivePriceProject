@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Flutter (Chrome)",
+        "request": "launch",
+        "type": "dart",
+        "args": [
+          "-d",
+          "chrome",
+          "--web-port=8080" // Burada istediğiniz port numarasını belirleyin
+        ]
+      }
+    ]
+  }

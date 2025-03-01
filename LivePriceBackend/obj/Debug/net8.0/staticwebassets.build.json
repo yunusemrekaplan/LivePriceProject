@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "iVaNqq18AsiAGbkJWHa1ewdW06EB6wY1rUsml5Pydb0=",
+  "Source": "LivePriceBackend",
+  "BasePath": "_content/LivePriceBackend",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
