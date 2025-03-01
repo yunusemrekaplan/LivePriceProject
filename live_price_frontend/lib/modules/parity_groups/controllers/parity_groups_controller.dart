@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:live_price_frontend/core/services/api_service.dart';
+import 'package:live_price_frontend/core/services/infrastructure/api_service.dart';
 import 'package:live_price_frontend/modules/parity_groups/models/parity_group_model.dart';
 import 'package:live_price_frontend/modules/parity_groups/widgets/parity_group_form.dart';
 
