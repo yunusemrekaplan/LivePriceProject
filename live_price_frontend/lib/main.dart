@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:live_price_frontend/core/theme/app_theme.dart';
+import 'package:live_price_frontend/routes/app_pages.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,6 +14,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp();
+    return GetMaterialApp(
+      title: 'Live Price Admin',
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.light,
+      debugShowCheckedModeBanner: false,
+      initialRoute: AppPages.initial,
+      getPages: AppPages.routes,
+    );
   }
 }
