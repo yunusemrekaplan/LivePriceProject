@@ -1,4 +1,4 @@
-import 'package:live_price_frontend/core/models/base_models.dart';
+import 'package:live_price_frontend/core/models/base_auditable_dto.dart';
 
 class ParityViewModel extends BaseAuditableDto {
   final String name;

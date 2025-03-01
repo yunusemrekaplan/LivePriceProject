@@ -1,4 +1,4 @@
-import 'package:live_price_frontend/core/models/base_models.dart';
+import 'package:live_price_frontend/core/models/base_auditable_dto.dart';
 import 'package:live_price_frontend/modules/users/models/user_view_model.dart';
 
 class CustomerViewModel extends BaseAuditableDto {

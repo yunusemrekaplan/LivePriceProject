@@ -1,8 +1,4 @@
-abstract class BaseDto {
-  final int id;
-
-  BaseDto({required this.id});
-}
+import 'base_dto.dart';
 
 abstract class BaseAuditableDto extends BaseDto {
   final DateTime? createdAt;
