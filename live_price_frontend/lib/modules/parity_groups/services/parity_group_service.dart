@@ -3,6 +3,8 @@ import '../../../core/config/api_config.dart';
 import '../../../core/models/response_model.dart';
 import '../../../core/services/api_client.dart';
 import '../models/parity_group_view_model.dart';
+import '../models/parity_group_create_model.dart';
+import '../models/parity_group_update_model.dart';
 
 class ParityGroupService extends GetxService {
   final ApiClient _apiClient = Get.find<ApiClient>();
@@ -17,39 +19,35 @@ class ParityGroupService extends GetxService {
   }
 
   Future<ApiResponse> createParityGroup({
-    required String name,
-    required int orderIndex,
-    bool isEnabled = true,
+    required ParityGroupCreateModel parityGroupCreateModel,
   }) async {
     final response = await _apiClient.post(
       ApiConfig.parityGroups,
-      data: {
-        'name': name,
-        'orderIndex': orderIndex,
-        'isEnabled': isEnabled,
-      },
+      data: parityGroupCreateModel.toJson(),
     );
     return response;
   }
 
   Future<ApiResponse> updateParityGroup({
     required int id,
-    String? name,
-    int? orderIndex,
-    bool? isEnabled,
+    required ParityGroupUpdateModel parityGroupUpdateModel,
   }) async {
     final response = await _apiClient.put(
       '${ApiConfig.parityGroups}/$id',
-      data: {
-        if (name != null) 'name': name,
-        if (orderIndex != null) 'orderIndex': orderIndex,
-        if (isEnabled != null) 'isEnabled': isEnabled,
-      },
+      data: parityGroupUpdateModel.toJson(),
     );
     return response;
   }
 
-  Future<ApiResponse> deleteParityGroup(int id) async {
+  Future<ApiResponse> updateParityGroupStatus(int id, bool isEnabled) async {
+    final response = await _apiClient.put(
+      '${ApiConfig.parityGroups}/$id/status',
+      data: {'isEnabled': isEnabled},
+    );
+    return response;
+  }
+
+  Future<ApiResponse> deletePurityGroup(int id) async {
     final response = await _apiClient.delete(
       '${ApiConfig.parityGroups}/$id',
     );
