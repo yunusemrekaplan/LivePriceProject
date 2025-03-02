@@ -8,14 +8,124 @@ import '../../parity_groups/services/parity_group_service.dart';
 
 class ParitiesController extends GetxController {
   final ParityService _parityService = Get.find<ParityService>();
-  final ParityGroupService _parityGroupService =
-  Get.find<ParityGroupService>();
+  final ParityGroupService _parityGroupService = Get.find<ParityGroupService>();
 
   final RxBool isLoading = false.obs;
   final RxList<ParityViewModel> parities = <ParityViewModel>[].obs;
   final RxList<ParityGroupViewModel> parityGroups =
       <ParityGroupViewModel>[].obs;
   final Rxn<int> selectedGroupId = Rxn<int>();
+
+  // Arama ve filtreleme
+  final RxString searchQuery = ''.obs;
+  final RxInt selectedGroupFilter = RxInt(-1);
+
+  // Sıralama
+  final RxString sortField = 'orderIndex'.obs;
+  final RxBool sortAscending = true.obs;
+
+  // Sayfalama
+  final RxInt currentPage = 0.obs;
+  final RxInt pageSize = 10.obs;
+  final RxInt totalItems = 0.obs;
+
+  // Seçilen grup için en yüksek sıra numarasını bulma
+  int getNextOrderIndexForGroup(int groupId) {
+    final groupParities =
+        parities.where((p) => p.parityGroupId == groupId).toList();
+    if (groupParities.isEmpty) return 1;
+
+    final maxOrderIndex = groupParities
+        .map((p) => p.orderIndex)
+        .reduce((max, index) => index > max ? index : max);
+    return maxOrderIndex + 1;
+  }
+
+  // Filtrelenmiş ve sıralanmış pariteler
+  List<ParityViewModel> get filteredParities {
+    var filtered = List<ParityViewModel>.from(parities);
+
+    // Arama filtresi
+    if (searchQuery.value.isNotEmpty) {
+      filtered = filtered
+          .where((parity) =>
+              parity.name
+                  .toLowerCase()
+                  .contains(searchQuery.value.toLowerCase()) ||
+              parity.symbol
+                  .toLowerCase()
+                  .contains(searchQuery.value.toLowerCase()))
+          .toList();
+    }
+
+    // Grup filtresi
+    if (selectedGroupFilter.value != -1) {
+      filtered = filtered
+          .where((parity) => parity.parityGroupId == selectedGroupFilter.value)
+          .toList();
+    }
+
+    // Sıralama
+    filtered.sort((a, b) {
+      var comparison = 0;
+      switch (sortField.value) {
+        case 'name':
+          comparison = a.name.compareTo(b.name);
+          break;
+        case 'symbol':
+          comparison = a.symbol.compareTo(b.symbol);
+          break;
+        case 'orderIndex':
+          comparison = a.orderIndex.compareTo(b.orderIndex);
+          break;
+      }
+      return sortAscending.value ? comparison : -comparison;
+    });
+
+    // Toplam öğe sayısını güncelle
+    totalItems.value = filtered.length;
+
+    return filtered;
+  }
+
+  // Sayfalanmış pariteler
+  List<ParityViewModel> get paginatedParities {
+    final start = currentPage.value * pageSize.value;
+    final end = (start + pageSize.value).clamp(0, filteredParities.length);
+    return filteredParities.sublist(start, end);
+  }
+
+  // Toplam sayfa sayısı
+  int get totalPages => (totalItems.value / pageSize.value).ceil();
+
+  // Sayfa değiştirme
+  void changePage(int page) {
+    if (page >= 0 && page < totalPages) {
+      currentPage.value = page;
+    }
+  }
+
+  // Sıralama değiştirme
+  void changeSort(String field) {
+    if (sortField.value == field) {
+      sortAscending.toggle();
+    } else {
+      sortField.value = field;
+      sortAscending.value = true;
+    }
+  }
+
+  // Arama sorgusunu güncelleme
+  void updateSearchQuery(String query) {
+    searchQuery.value = query;
+    currentPage.value = 0; // İlk sayfaya dön
+  }
+
+  // Grup filtresini güncelleme
+  void updateGroupFilter(int groupId) {
+    selectedGroupFilter.value = groupId;
+    currentPage.value = 0; // İlk sayfaya dön
+  }
 
   @override
   void onInit() {
@@ -56,12 +166,12 @@ class ParitiesController extends GetxController {
   }
 
   Future<void> createParity(
-      String name,
-      String symbol,
-      bool isEnabled,
-      int orderIndex,
-      int parityGroupId,
-      ) async {
+    String name,
+    String symbol,
+    bool isEnabled,
+    int orderIndex,
+    int parityGroupId,
+  ) async {
     try {
       var createModel = ParityCreateModel(
         name: name,
@@ -71,7 +181,7 @@ class ParitiesController extends GetxController {
         isEnabled: isEnabled,
       );
       final response =
-      await _parityService.createParity(parityCreateModel: createModel);
+          await _parityService.createParity(parityCreateModel: createModel);
 
       if (response.success) {
         await fetchParities();
@@ -86,13 +196,13 @@ class ParitiesController extends GetxController {
   }
 
   Future<void> updateParity(
-      int id,
-      String name,
-      String symbol,
-      bool isEnabled,
-      int orderIndex,
-      int parityGroupId,
-      ) async {
+    int id,
+    String name,
+    String symbol,
+    bool isEnabled,
+    int orderIndex,
+    int parityGroupId,
+  ) async {
     try {
       var updateModel = ParityUpdateModel(
         name: name,
