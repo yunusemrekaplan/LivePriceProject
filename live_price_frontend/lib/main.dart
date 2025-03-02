@@ -2,12 +2,12 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:live_price_frontend/core/config/api_config.dart';
-import 'package:live_price_frontend/core/theme/app_theme.dart';
-import 'package:live_price_frontend/routes/app_pages.dart';
-
+import 'core/config/api_config.dart';
+import 'core/config/initial_binding.dart';
 import 'core/middleware/auth_interceptor.dart';
 import 'core/services/api_client.dart';
+import 'core/theme/app_theme.dart';
+import 'routes/app_pages.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,12 +34,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: 'Live Price Admin',
+      title: 'Live Price Admin Panel',
       theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.light,
       debugShowCheckedModeBanner: false,
-      //initialBinding: InitialBinding(),
+      defaultTransition: Transition.fadeIn,
+      initialBinding: InitialBinding(),
       initialRoute: AppPages.initial,
       getPages: AppPages.routes,
     );

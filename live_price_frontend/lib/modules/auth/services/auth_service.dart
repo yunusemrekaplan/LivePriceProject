@@ -18,8 +18,11 @@ class AuthService extends GetxService {
     );
 
     if (response.success && response.data != null) {
-      await _tokenManager.setAccessToken(response.data!.accessToken);
-      await _tokenManager.setRefreshToken(response.data!.refreshToken);
+      await _tokenManager.saveTokens(
+        accessToken: response.data!.accessToken,
+        refreshToken: response.data!.refreshToken,
+        userName: response.data!.userName,
+      );
     }
 
     return response;

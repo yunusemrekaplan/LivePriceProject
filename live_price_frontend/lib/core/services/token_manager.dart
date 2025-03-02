@@ -4,6 +4,7 @@ import 'package:jwt_decoder/jwt_decoder.dart';
 class TokenManager {
   static const String accessTokenKey = 'accessToken';
   static const String refreshTokenKey = 'refreshToken';
+  static const String userNameKey = 'userName';
 
   // Singleton instance
   static TokenManager? _instance;
@@ -55,18 +56,29 @@ class TokenManager {
     return JwtDecoder.decode(token);
   }
 
+  Future<void> setUserName(String userName) async {
+    await _storage.write(userNameKey, userName);
+  }
+
+  String? getUserName() {
+    return _storage.read<String>(userNameKey);
+  }
+
   // Kullanıcı oturum işlemleri
   Future<void> saveTokens({
     required String accessToken,
     required String refreshToken,
+    required String userName,
   }) async {
     await setAccessToken(accessToken);
     await setRefreshToken(refreshToken);
+    await setUserName(userName);
   }
 
   Future<void> clearTokens() async {
     await _storage.remove(accessTokenKey);
     await _storage.remove(refreshTokenKey);
+    await _storage.remove(userNameKey);
   }
 
   bool isAuthenticated() {

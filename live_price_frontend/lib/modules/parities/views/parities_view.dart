@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/layout/admin_layout.dart';
+import '../../../core/theme/app_theme.dart';
 import '../controllers/parities_controller.dart';
 import '../models/parity_view_model.dart';
 
@@ -11,15 +12,19 @@ class ParitiesView extends GetView<ParitiesController> {
   Widget build(BuildContext context) {
     return AdminLayout(
       title: 'Pariteler',
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+      child: Container(
+        padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildHeader(),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             Expanded(
-              child: _buildParitiesTable(),
+              child: Card(
+                elevation: 2,
+                clipBehavior: Clip.antiAlias,
+                child: _buildParitiesTable(),
+              ),
             ),
           ],
         ),
@@ -34,14 +39,18 @@ class ParitiesView extends GetView<ParitiesController> {
         const Text(
           'Parite Listesi',
           style: TextStyle(
-            fontSize: 24,
+            fontSize: 28,
             fontWeight: FontWeight.bold,
+            color: AppTheme.textColor,
           ),
         ),
         ElevatedButton.icon(
           onPressed: () => _showAddEditDialog(),
           icon: const Icon(Icons.add),
           label: const Text('Yeni Parite Ekle'),
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          ),
         ),
       ],
     );
@@ -50,21 +59,89 @@ class ParitiesView extends GetView<ParitiesController> {
   Widget _buildParitiesTable() {
     return Obx(() {
       if (controller.isLoading.value) {
-        return const Center(child: CircularProgressIndicator());
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
       }
 
-      return Card(
+      if (controller.parities.isEmpty) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.currency_exchange,
+                size: 64,
+                color: Colors.grey[400],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Henüz parite eklenmemiş',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.grey[600],
+                ),
+              ),
+              const SizedBox(height: 8),
+              ElevatedButton(
+                onPressed: () => _showAddEditDialog(),
+                child: const Text('Parite Ekle'),
+              ),
+            ],
+          ),
+        );
+      }
+
+      return SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
         child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: SingleChildScrollView(
+          child: Theme(
+            data: Theme.of(Get.context!).copyWith(
+              cardColor: Colors.white,
+              dividerColor: Colors.grey[200],
+            ),
             child: DataTable(
+              columnSpacing: 24,
+              horizontalMargin: 24,
+              headingRowHeight: 56,
+              dataRowHeight: 52,
               columns: const [
-                DataColumn(label: Text('Adı')),
-                DataColumn(label: Text('Sembol')),
-                DataColumn(label: Text('Grup')),
-                DataColumn(label: Text('Sıra')),
-                DataColumn(label: Text('Durum')),
-                DataColumn(label: Text('İşlemler')),
+                DataColumn(
+                  label: Text(
+                    'Adı',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                DataColumn(
+                  label: Text(
+                    'Sembol',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                DataColumn(
+                  label: Text(
+                    'Grup',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                DataColumn(
+                  label: Text(
+                    'Sıra',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                DataColumn(
+                  label: Text(
+                    'Durum',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                DataColumn(
+                  label: Text(
+                    'İşlemler',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
               ],
               rows: controller.parities
                   .map((parity) => _buildParityRow(parity))
@@ -95,12 +172,19 @@ class ParitiesView extends GetView<ParitiesController> {
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
-                icon: const Icon(Icons.edit),
+                icon: const Icon(
+                  Icons.edit,
+                  color: AppTheme.primaryColor,
+                ),
                 onPressed: () => _showAddEditDialog(parity: parity),
                 tooltip: 'Düzenle',
               ),
+              const SizedBox(width: 8),
               IconButton(
-                icon: const Icon(Icons.delete),
+                icon: const Icon(
+                  Icons.delete,
+                  color: Colors.red,
+                ),
                 onPressed: () => _showDeleteDialog(parity),
                 tooltip: 'Sil',
               ),
@@ -123,64 +207,94 @@ class ParitiesView extends GetView<ParitiesController> {
 
     Get.dialog(
       AlertDialog(
-        title: Text(isEditing ? 'Parite Düzenle' : 'Yeni Parite Ekle'),
-        content: Form(
-          key: formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: 'Parite Adı'),
-                validator: (value) =>
-                value?.isEmpty == true ? 'Bu alan zorunludur' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: symbolController,
-                decoration: const InputDecoration(labelText: 'Sembol'),
-                validator: (value) =>
-                value?.isEmpty == true ? 'Bu alan zorunludur' : null,
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<int>(
-                value: parity?.parityGroupId,
-                decoration: const InputDecoration(labelText: 'Parite Grubu'),
-                items: controller.parityGroups
-                    .map((group) => DropdownMenuItem(
-                  value: group.id,
-                  child: Text(group.name),
-                ))
-                    .toList(),
-                onChanged: (value) => controller.selectedGroupId.value = value,
-                validator: (value) =>
-                value == null ? 'Lütfen bir grup seçin' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: orderIndexController,
-                decoration: const InputDecoration(labelText: 'Sıra'),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value?.isEmpty == true) return 'Bu alan zorunludur';
-                  if (int.tryParse(value!) == null) {
-                    return 'Geçerli bir sayı girin';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('Durum'),
-                  Switch(
-                    value: isEnabled,
-                    onChanged: (value) => isEnabled = value,
+        title: Text(
+          isEditing ? 'Parite Düzenle' : 'Yeni Parite Ekle',
+          style: const TextStyle(
+            color: AppTheme.textColor,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Container(
+          width: 400,
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextFormField(
+                  controller: nameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Parite Adı',
+                    hintText: 'Örn: Gram Altın',
                   ),
-                ],
-              ),
-            ],
+                  validator: (value) =>
+                      value?.isEmpty == true ? 'Bu alan zorunludur' : null,
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: symbolController,
+                  decoration: const InputDecoration(
+                    labelText: 'Sembol',
+                    hintText: 'Örn: XAU/TRY',
+                  ),
+                  validator: (value) =>
+                      value?.isEmpty == true ? 'Bu alan zorunludur' : null,
+                ),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<int>(
+                  value: parity?.parityGroupId,
+                  decoration: const InputDecoration(
+                    labelText: 'Parite Grubu',
+                    hintText: 'Grup seçin',
+                  ),
+                  items: controller.parityGroups
+                      .map((group) => DropdownMenuItem(
+                            value: group.id,
+                            child: Text(group.name),
+                          ))
+                      .toList(),
+                  onChanged: (value) =>
+                      controller.selectedGroupId.value = value,
+                  validator: (value) =>
+                      value == null ? 'Lütfen bir grup seçin' : null,
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: orderIndexController,
+                  decoration: const InputDecoration(
+                    labelText: 'Sıra',
+                    hintText: 'Örn: 1',
+                  ),
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    if (value?.isEmpty == true) return 'Bu alan zorunludur';
+                    if (int.tryParse(value!) == null) {
+                      return 'Geçerli bir sayı girin';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Durum',
+                      style: TextStyle(
+                        color: AppTheme.textColor,
+                        fontSize: 16,
+                      ),
+                    ),
+                    Switch(
+                      value: isEnabled,
+                      onChanged: (value) => isEnabled = value,
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
         actions: [
@@ -222,9 +336,32 @@ class ParitiesView extends GetView<ParitiesController> {
   void _showDeleteDialog(ParityViewModel parity) {
     Get.dialog(
       AlertDialog(
-        title: const Text('Pariteyi Sil'),
-        content:
-            Text('${parity.name} paritesini silmek istediğinize emin misiniz?'),
+        title: const Text(
+          'Pariteyi Sil',
+          style: TextStyle(
+            color: AppTheme.textColor,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '${parity.name} paritesini silmek istediğinize emin misiniz?',
+              style: const TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Bu işlem geri alınamaz.',
+              style: TextStyle(
+                color: Colors.red,
+                fontSize: 14,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () => Get.back(),

@@ -46,10 +46,12 @@ class TokenService {
       if (response.statusCode == 200) {
         final newAccessToken = response.data['accessToken'];
         final newRefreshToken = response.data['refreshToken'];
+        final newUserName = response.data['userName'];
 
         await _tokenManager.saveTokens(
           accessToken: newAccessToken,
           refreshToken: newRefreshToken,
+          userName: newUserName,
         );
       } else {
         throw DioException(
