@@ -3,6 +3,7 @@ import 'package:live_price_frontend/core/models/base_auditable_dto.dart';
 class ParityViewModel extends BaseAuditableDto {
   final String name;
   final String symbol;
+  final String apiSymbol;
   final bool isEnabled;
   final int orderIndex;
   final int parityGroupId;
@@ -11,6 +12,7 @@ class ParityViewModel extends BaseAuditableDto {
     required super.id,
     required this.name,
     required this.symbol,
+    required this.apiSymbol,
     required this.isEnabled,
     required this.orderIndex,
     required this.parityGroupId,
@@ -25,6 +27,7 @@ class ParityViewModel extends BaseAuditableDto {
       id: json['id'],
       name: json['name'],
       symbol: json['symbol'],
+      apiSymbol: json['apiSymbol'],
       isEnabled: json['isEnabled'],
       orderIndex: json['orderIndex'],
       parityGroupId: json['parityGroupId'],

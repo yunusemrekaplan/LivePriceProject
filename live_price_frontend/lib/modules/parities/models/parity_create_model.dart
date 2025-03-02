@@ -1,6 +1,7 @@
 class ParityCreateModel {
   final String name;
   final String symbol;
+  final String apiSymbol;
   final bool isEnabled;
   final int orderIndex;
   final int parityGroupId;
@@ -8,6 +9,7 @@ class ParityCreateModel {
   ParityCreateModel({
     required this.name,
     required this.symbol,
+    required this.apiSymbol,
     required this.isEnabled,
     required this.orderIndex,
     required this.parityGroupId,
@@ -17,6 +19,7 @@ class ParityCreateModel {
     return {
       'name': name,
       'symbol': symbol,
+      'apiSymbol': apiSymbol,
       'isEnabled': isEnabled,
       'orderIndex': orderIndex,
       'parityGroupId': parityGroupId,

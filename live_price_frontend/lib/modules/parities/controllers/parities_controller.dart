@@ -1,10 +1,12 @@
 import 'package:get/get.dart';
 import 'package:live_price_frontend/modules/parities/models/parity_create_model.dart';
 import 'package:live_price_frontend/modules/parities/models/parity_update_model.dart';
-import '../models/parity_view_model.dart';
-import '../services/parity_service.dart';
+
 import '../../parity_groups/models/parity_group_view_model.dart';
 import '../../parity_groups/services/parity_group_service.dart';
+import '../models/parity_view_model.dart';
+import '../services/parity_service.dart';
+import '../widgets/parity_dialogs.dart';
 
 class ParitiesController extends GetxController {
   final ParityService _parityService = Get.find<ParityService>();
@@ -21,13 +23,19 @@ class ParitiesController extends GetxController {
   final RxInt selectedGroupFilter = RxInt(-1);
 
   // Sıralama
-  final RxString sortField = 'orderIndex'.obs;
+  final RxString sortField = 'group'.obs;
   final RxBool sortAscending = true.obs;
 
   // Sayfalama
   final RxInt currentPage = 0.obs;
   final RxInt pageSize = 10.obs;
   final RxInt totalItems = 0.obs;
+
+  // Grup sıralaması için yardımcı metot
+  int _getParityGroupOrderIndex(int groupId) {
+    final group = parityGroups.firstWhereOrNull((g) => g.id == groupId);
+    return group?.orderIndex ?? 0;
+  }
 
   // Seçilen grup için en yüksek sıra numarasını bulma
   int getNextOrderIndexForGroup(int groupId) {
@@ -77,6 +85,15 @@ class ParitiesController extends GetxController {
           break;
         case 'orderIndex':
           comparison = a.orderIndex.compareTo(b.orderIndex);
+          break;
+        case 'group':
+          // Önce grupların sıra numarasına göre sırala
+          comparison = _getParityGroupOrderIndex(a.parityGroupId)
+              .compareTo(_getParityGroupOrderIndex(b.parityGroupId));
+          // Eğer aynı gruptalarsa, parite sıra numarasına göre sırala
+          if (comparison == 0) {
+            comparison = a.orderIndex.compareTo(b.orderIndex);
+          }
           break;
       }
       return sortAscending.value ? comparison : -comparison;
@@ -256,5 +273,13 @@ class ParitiesController extends GetxController {
     } catch (e) {
       Get.snackbar('Hata', 'Parite durumu güncellenirken bir hata oluştu');
     }
+  }
+
+  void showAddEditDialog({ParityViewModel? parity}) {
+    ParityDialogs.showAddEditDialog(parity: parity);
+  }
+
+  void showDeleteDialog(ParityViewModel parity) {
+    ParityDialogs.showDeleteDialog(parity);
   }
 }
