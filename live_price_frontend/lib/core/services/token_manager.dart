@@ -1,20 +1,20 @@
 import 'package:get_storage/get_storage.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
-class TokenManagement {
+class TokenManager {
   static const String accessTokenKey = 'accessToken';
   static const String refreshTokenKey = 'refreshToken';
 
   // Singleton instance
-  static TokenManagement? _instance;
+  static TokenManager? _instance;
   final _storage = GetStorage();
 
   // Private constructor
-  TokenManagement._();
+  TokenManager._();
 
   // Singleton factory constructor
-  factory TokenManagement() {
-    _instance ??= TokenManagement._();
+  factory TokenManager() {
+    _instance ??= TokenManager._();
     return _instance!;
   }
 

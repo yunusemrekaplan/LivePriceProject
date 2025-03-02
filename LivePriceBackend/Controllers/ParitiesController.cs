@@ -109,6 +109,29 @@ public class ParitiesController(LivePriceDbContext context) : ControllerBase
 
         return Ok(entity.ToViewModel());
     }
+    
+    /// <summary>
+    /// Update the status of an existing parity.
+    /// </summary>
+    /// <param name="id">Parity ID</param>
+    /// <param name="isEnabled">New status</param>
+    /// <returns>No content</returns>
+    [HttpPatch("{id:int}/status")]
+    [SwaggerOperation(Summary = "Updates the status of an existing parity", Description = "Updates the status of an existing parity based on the provided ID.")]
+    [SwaggerResponse(StatusCodes.Status204NoContent, "Parity status updated successfully")]
+    [SwaggerResponse(StatusCodes.Status404NotFound, "Parity not found")]
+    public async Task<IActionResult> UpdateParityStatus(int id, [FromBody] bool isEnabled)
+    {
+        var entity = await context.Parities.FirstOrDefaultAsync(p => p.Id == id);
+
+        if (entity == null)
+            return NotFound(new { message = ErrorMessages.ParityNotFound });
+
+        entity.IsEnabled = isEnabled;
+        await context.SaveChangesAsync();
+
+        return NoContent();
+    }
 
     /// <summary>
     /// Delete a parity by ID.

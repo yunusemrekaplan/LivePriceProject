@@ -357,3 +357,4 @@ C:\repos\LivePriceProject\LivePriceBackend\obj\Debug\net8.0\ref\LivePriceBackend
 C:\repos\LivePriceProject\LivePriceBackend\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
 C:\repos\LivePriceProject\LivePriceBackend\bin\Debug\net8.0\Microsoft.Bcl.Memory.dll
 C:\repos\LivePriceProject\LivePriceBackend\bin\Debug\net8.0\Swashbuckle.AspNetCore.Annotations.dll
+C:\repos\LivePriceProject\LivePriceBackend\obj\Debug\net8.0\LivePriceBackend.sourcelink.json

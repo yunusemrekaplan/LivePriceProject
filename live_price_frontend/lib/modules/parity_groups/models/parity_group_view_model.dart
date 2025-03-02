@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:live_price_frontend/core/models/base_auditable_dto.dart';
 
 class ParityGroupViewModel extends BaseAuditableDto {
@@ -25,9 +27,11 @@ class ParityGroupViewModel extends BaseAuditableDto {
       description: json['description'],
       isEnabled: json['isEnabled'],
       orderIndex: json['orderIndex'],
-      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
+      createdAt:
+          json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
       createdById: json['createdById'],
-      updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
+      updatedAt:
+          json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
       updatedById: json['updatedById'],
     );
   }

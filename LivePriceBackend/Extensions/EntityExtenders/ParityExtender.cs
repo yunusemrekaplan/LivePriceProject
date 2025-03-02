@@ -37,8 +37,8 @@ public static class ParityExtender
 
     public static void UpdateEntity(this ParityUpdateModel parityUpdateModel, Parity parity)
     {
-        parity.Name = parityUpdateModel.Name;
-        parity.Symbol = parityUpdateModel.Symbol;
+        parity.Name = parityUpdateModel.Name ?? parity.Name;
+        parity.Symbol = parityUpdateModel.Symbol ?? parity.Symbol;
         parity.IsEnabled = parityUpdateModel.IsEnabled;
         parity.OrderIndex = parityUpdateModel.OrderIndex;
         parity.ParityGroupId = parityUpdateModel.ParityGroupId;

@@ -1,15 +1,21 @@
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
-import 'package:live_price_frontend/core/services/token_management.dart';
+import 'package:live_price_frontend/core/services/token_manager.dart';
 
 class TokenService {
-  final _dio = Get.find<Dio>();
-  final TokenManagement _tokenManagement;
+  static final TokenService _instance = TokenService._internal();
+  factory TokenService() => _instance;
 
-  TokenService() : _tokenManagement = TokenManagement();
+  late final Dio _dio;
+  late final TokenManager _tokenManager;
+
+  TokenService._internal() {
+    _dio = Get.find<Dio>();
+    _tokenManager = TokenManager();
+  }
 
   String? getAuthorizationHeader() {
-    final token = _tokenManagement.getAccessToken();
+    final token = _tokenManager.getAccessToken();
     return token != null ? 'Bearer $token' : null;
   }
 
@@ -18,13 +24,13 @@ class TokenService {
       await _refreshToken();
       return true;
     } catch (e) {
-      _tokenManagement.clearTokens();
+      _tokenManager.clearTokens();
       return false;
     }
   }
 
   Future<void> _refreshToken() async {
-    final refreshToken = _tokenManagement.getRefreshToken();
+    final refreshToken = _tokenManager.getRefreshToken();
     if (refreshToken == null) {
       throw DioException(
         requestOptions: RequestOptions(path: ''),
@@ -41,7 +47,7 @@ class TokenService {
         final newAccessToken = response.data['accessToken'];
         final newRefreshToken = response.data['refreshToken'];
 
-        await _tokenManagement.saveTokens(
+        await _tokenManager.saveTokens(
           accessToken: newAccessToken,
           refreshToken: newRefreshToken,
         );

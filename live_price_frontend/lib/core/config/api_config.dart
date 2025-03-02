@@ -1,5 +1,5 @@
 class ApiConfig {
-  static const String baseUrl = 'http://localhost:5000/api';
+  static const String baseUrl = 'http://localhost:5104/api';
 
   static const Duration connectTimeout = Duration(seconds: 30);
   static const Duration receiveTimeout = Duration(seconds: 30);
@@ -18,5 +18,5 @@ class ApiConfig {
   static const String users = '/users';
   static const String customers = '/customers';
   static const String parities = '/parities';
-  static const String parityGroups = '/parity-groups';
+  static const String parityGroups = '/parityGroups';
 }

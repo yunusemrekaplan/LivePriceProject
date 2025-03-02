@@ -30,8 +30,8 @@ public static class ParityGroupExtender
 
     public static void UpdateEntity(this ParityGroupUpdateModel model, ParityGroup parityGroup)
     {
-        parityGroup.Name = model.Name;
-        parityGroup.Description = model.Description;
+        parityGroup.Name = model.Name ?? parityGroup.Name;
+        parityGroup.Description = model.Description ?? parityGroup.Description;
         parityGroup.IsEnabled = model.IsEnabled;
         parityGroup.OrderIndex = model.OrderIndex;
     }

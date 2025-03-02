@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("LivePriceBackend")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+504e065dca118de8f5119b49bb9f86dee3eb7b73")]
 [assembly: System.Reflection.AssemblyProductAttribute("LivePriceBackend")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LivePriceBackend")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

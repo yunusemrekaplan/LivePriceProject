@@ -11,16 +11,29 @@ class ApiResponse<T> {
     this.statusCode,
   });
 
-  factory ApiResponse.fromJson(
-      Map<String, dynamic> json, T Function(Map<String, dynamic>)? fromJson) {
-    return ApiResponse<T>(
-      success: json['success'] ?? true,
-      data: json['data'] != null && fromJson != null
-          ? fromJson(json['data'])
-          : null,
-      message: json['message'],
-      statusCode: json['statusCode'],
-    );
+  factory ApiResponse.fromJson({
+    T Function(Map<String, dynamic>)? fromJson,
+    T Function(List<dynamic>)? fromJsonList,
+    bool success = true,
+    dynamic data,
+    String? message,
+    int? statusCode,
+  }) {
+    if (data is List && fromJsonList != null) {
+      return ApiResponse<T>(
+        success: success,
+        data: fromJsonList(data),
+        message: message,
+        statusCode: statusCode,
+      );
+    } else {
+      return ApiResponse<T>(
+        success: success,
+        data: fromJson != null ? fromJson(data as Map<String, dynamic>) : data,
+        message: message,
+        statusCode: statusCode,
+      );
+    }
   }
 
   factory ApiResponse.error(String message, {int? statusCode}) {

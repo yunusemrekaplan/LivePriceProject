@@ -49,6 +49,26 @@ namespace LivePriceBackend.Controllers
         }
 
         /// <summary>
+        /// Get users by customer ID.
+        /// </summary>
+        /// <param name="customerId">Customer ID</param>
+        /// <returns>List of UserViewModel</returns>
+        [HttpGet("by-customer/{customerId:int}")]
+        [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(IEnumerable<UserViewModel>))]
+        [SwaggerResponse(StatusCodes.Status404NotFound, Description = "No users found for the customer")]
+        public async Task<ActionResult<IEnumerable<UserViewModel>>> GetByCustomerId(int customerId)
+        {
+            if (!await context.Users.AnyAsync(u => u.CustomerId == customerId))
+                return NotFound(ErrorMessages.UserNotFound);
+
+            return await context.Users
+                .AsNoTracking()
+                .Where(u => u.CustomerId == customerId)
+                .Select(u => u.ToViewModel())
+                .ToListAsync();
+        }
+
+        /// <summary>
         /// Create a new user.
         /// </summary>
         /// <param name="model">UserCreateModel</param>

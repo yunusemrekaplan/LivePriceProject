@@ -10,6 +10,7 @@ class ApiClient extends GetxService {
     String path, {
     Map<String, dynamic>? queryParameters,
     T Function(Map<String, dynamic>)? fromJson,
+    T Function(List<dynamic>)? fromJsonList,
   }) async {
     try {
       final response = await _dio.get(
@@ -17,7 +18,7 @@ class ApiClient extends GetxService {
         queryParameters: queryParameters,
       );
 
-      return _handleResponse(response, fromJson);
+      return _handleResponse(response, fromJson, fromJsonList);
     } on DioException catch (e) {
       return _handleError(e);
     }
@@ -28,6 +29,7 @@ class ApiClient extends GetxService {
     dynamic data,
     Map<String, dynamic>? queryParameters,
     T Function(Map<String, dynamic>)? fromJson,
+    T Function(List<dynamic>)? fromJsonList,
   }) async {
     try {
       final response = await _dio.post(
@@ -36,7 +38,7 @@ class ApiClient extends GetxService {
         queryParameters: queryParameters,
       );
 
-      return _handleResponse(response, fromJson);
+      return _handleResponse(response, fromJson, fromJsonList);
     } on DioException catch (e) {
       return _handleError(e);
     }
@@ -47,6 +49,7 @@ class ApiClient extends GetxService {
     dynamic data,
     Map<String, dynamic>? queryParameters,
     T Function(Map<String, dynamic>)? fromJson,
+    T Function(List<dynamic>)? fromJsonList,
   }) async {
     try {
       final response = await _dio.put(
@@ -55,7 +58,27 @@ class ApiClient extends GetxService {
         queryParameters: queryParameters,
       );
 
-      return _handleResponse(response, fromJson);
+      return _handleResponse(response, fromJson, fromJsonList);
+    } on DioException catch (e) {
+      return _handleError(e);
+    }
+  }
+
+  Future<ApiResponse<T>> patch<T>(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    T Function(Map<String, dynamic>)? fromJson,
+    T Function(List<dynamic>)? fromJsonList,
+  }) async {
+    try {
+      final response = await _dio.patch(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+      );
+
+      return _handleResponse(response, fromJson, fromJsonList);
     } on DioException catch (e) {
       return _handleError(e);
     }
@@ -65,6 +88,7 @@ class ApiClient extends GetxService {
     String path, {
     Map<String, dynamic>? queryParameters,
     T Function(Map<String, dynamic>)? fromJson,
+    T Function(List<dynamic>)? fromJsonList,
   }) async {
     try {
       final response = await _dio.delete(
@@ -72,7 +96,7 @@ class ApiClient extends GetxService {
         queryParameters: queryParameters,
       );
 
-      return _handleResponse(response, fromJson);
+      return _handleResponse(response, fromJson, fromJsonList);
     } on DioException catch (e) {
       return _handleError(e);
     }
@@ -81,10 +105,23 @@ class ApiClient extends GetxService {
   ApiResponse<T> _handleResponse<T>(
     dio.Response response,
     T Function(Map<String, dynamic>)? fromJson,
+    T Function(List<dynamic>)? fromJsonList,
   ) {
     if (response.statusCode! >= 200 && response.statusCode! < 300) {
       if (response.data is Map<String, dynamic>) {
-        return ApiResponse.fromJson(response.data, fromJson);
+        return ApiResponse.fromJson(
+          fromJson: fromJson,
+          data: response.data,
+          message: response.statusMessage,
+          statusCode: response.statusCode,
+        );
+      } else if (response.data is List && fromJsonList != null) {
+        return ApiResponse.fromJson(
+          fromJsonList: fromJsonList,
+          data: response.data,
+          message: response.statusMessage,
+          statusCode: response.statusCode,
+        );
       }
       return ApiResponse<T>(
         success: true,
@@ -94,7 +131,7 @@ class ApiClient extends GetxService {
     }
 
     return ApiResponse.error(
-      response.data['message'] ?? 'Bir hata oluştu',
+      response.statusMessage ?? 'Bir hata oluştu',
       statusCode: response.statusCode,
     );
   }

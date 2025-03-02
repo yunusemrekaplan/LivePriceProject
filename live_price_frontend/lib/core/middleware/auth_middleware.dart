@@ -1,24 +1,30 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:live_price_frontend/core/services/token_manager.dart';
 import 'package:live_price_frontend/core/services/token_service.dart';
 
 class AuthMiddleware extends GetMiddleware {
   final _tokenService = TokenService();
+  final _tokenManager = TokenManager();
 
   @override
   RouteSettings? redirect(String? route) {
-    final authHeader = _tokenService.getAuthorizationHeader();
-    if (authHeader == null) {
+    if (_tokenManager.getAccessToken() == null) {
       return const RouteSettings(name: '/login');
     }
 
-    // Token kontrolünü arka planda yap
-    _checkTokenValidity();
+    if (!_tokenManager.hasValidAccessToken()) {
+      _checkTokenValidity();
+    }
+
     return null;
   }
 
   Future<void> _checkTokenValidity() async {
     final isTokenValid = await _tokenService.refreshTokenIfNeeded();
+    log('Token geçerliliği kontrol edildi: $isTokenValid');
     if (!isTokenValid) {
       Get.offAllNamed('/login');
     }
