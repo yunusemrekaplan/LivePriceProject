@@ -2,14 +2,14 @@ import 'package:get/get.dart';
 import 'package:live_price_frontend/modules/parities/models/parity_create_model.dart';
 import 'package:live_price_frontend/modules/parities/models/parity_update_model.dart';
 import '../models/parity_view_model.dart';
-import '../services/parities_service.dart';
+import '../services/parity_service.dart';
 import '../../parity_groups/models/parity_group_view_model.dart';
-import '../../parity_groups/services/parity_groups_service.dart';
+import '../../parity_groups/services/parity_group_service.dart';
 
 class ParitiesController extends GetxController {
-  final ParitiesService _parityService = Get.find<ParitiesService>();
-  final ParityGroupsService _parityGroupService =
-      Get.find<ParityGroupsService>();
+  final ParityService _parityService = Get.find<ParityService>();
+  final ParityGroupService _parityGroupService =
+  Get.find<ParityGroupService>();
 
   final RxBool isLoading = false.obs;
   final RxList<ParityViewModel> parities = <ParityViewModel>[].obs;
@@ -56,12 +56,12 @@ class ParitiesController extends GetxController {
   }
 
   Future<void> createParity(
-    String name,
-    String symbol,
-    bool isEnabled,
-    int orderIndex,
-    int parityGroupId,
-  ) async {
+      String name,
+      String symbol,
+      bool isEnabled,
+      int orderIndex,
+      int parityGroupId,
+      ) async {
     try {
       var createModel = ParityCreateModel(
         name: name,
@@ -71,7 +71,7 @@ class ParitiesController extends GetxController {
         isEnabled: isEnabled,
       );
       final response =
-          await _parityService.createParity(parityCreateModel: createModel);
+      await _parityService.createParity(parityCreateModel: createModel);
 
       if (response.success) {
         await fetchParities();
@@ -86,13 +86,13 @@ class ParitiesController extends GetxController {
   }
 
   Future<void> updateParity(
-    int id,
-    String name,
-    String symbol,
-    bool isEnabled,
-    int orderIndex,
-    int parityGroupId,
-  ) async {
+      int id,
+      String name,
+      String symbol,
+      bool isEnabled,
+      int orderIndex,
+      int parityGroupId,
+      ) async {
     try {
       var updateModel = ParityUpdateModel(
         name: name,

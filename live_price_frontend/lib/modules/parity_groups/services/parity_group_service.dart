@@ -1,18 +1,17 @@
-import 'dart:developer';
-
 import 'package:get/get.dart';
 import '../../../core/config/api_config.dart';
 import '../../../core/models/response_model.dart';
 import '../../../core/services/api_client.dart';
 import '../models/parity_group_view_model.dart';
 
-class ParityGroupsService extends GetxService {
+class ParityGroupService extends GetxService {
   final ApiClient _apiClient = Get.find<ApiClient>();
 
   Future<ApiResponse<List<ParityGroupViewModel>>> getParityGroups() async {
     final response = await _apiClient.get<List<ParityGroupViewModel>>(
       ApiConfig.parityGroups,
-      fromJsonList: (json) => (json).map((item) => ParityGroupViewModel.fromJson(item)).toList(),
+      fromJsonList: (json) =>
+          (json).map((item) => ParityGroupViewModel.fromJson(item)).toList(),
     );
     return response;
   }

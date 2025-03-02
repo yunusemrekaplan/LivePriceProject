@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:live_price_frontend/core/models/base_auditable_dto.dart';
 
 class ParityGroupViewModel extends BaseAuditableDto {

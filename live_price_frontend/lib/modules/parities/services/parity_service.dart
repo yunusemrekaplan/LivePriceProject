@@ -6,7 +6,7 @@ import 'package:live_price_frontend/modules/parities/models/parity_create_model.
 import 'package:live_price_frontend/modules/parities/models/parity_update_model.dart';
 import 'package:live_price_frontend/modules/parities/models/parity_view_model.dart';
 
-class ParitiesService extends GetxService {
+class ParityService extends GetxService {
   final ApiClient _apiClient = Get.find<ApiClient>();
 
   Future<ApiResponse<List<ParityViewModel>>> getParities() async {
