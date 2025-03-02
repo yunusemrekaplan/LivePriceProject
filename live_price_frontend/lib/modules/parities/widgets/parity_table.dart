@@ -78,6 +78,7 @@ class ParityTable extends GetView<ParitiesController> {
     return [
       _buildSortableColumn('Adı', 'name'),
       _buildSortableColumn('Sembol', 'symbol'),
+      _buildSortableColumn('API Sembol', 'apiSymbol'),
       _buildSortableColumn('Grup', 'group'),
       _buildSortableColumn('Sıra', 'orderIndex'),
       const DataColumn(
@@ -144,6 +145,12 @@ class ParityTable extends GetView<ParitiesController> {
         DataCell(
           Text(
             parity.symbol,
+            style: const TextStyle(fontSize: 14),
+          ),
+        ),
+        DataCell(
+          Text(
+            parity.apiSymbol,
             style: const TextStyle(fontSize: 14),
           ),
         ),

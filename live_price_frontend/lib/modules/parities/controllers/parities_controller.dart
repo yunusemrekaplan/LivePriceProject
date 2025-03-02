@@ -62,6 +62,9 @@ class ParitiesController extends GetxController {
                   .contains(searchQuery.value.toLowerCase()) ||
               parity.symbol
                   .toLowerCase()
+                  .contains(searchQuery.value.toLowerCase()) ||
+              parity.apiSymbol
+                  .toLowerCase()
                   .contains(searchQuery.value.toLowerCase()))
           .toList();
     }
@@ -82,6 +85,9 @@ class ParitiesController extends GetxController {
           break;
         case 'symbol':
           comparison = a.symbol.compareTo(b.symbol);
+          break;
+        case 'apiSymbol':
+          comparison = a.apiSymbol.compareTo(b.apiSymbol);
           break;
         case 'orderIndex':
           comparison = a.orderIndex.compareTo(b.orderIndex);
@@ -185,6 +191,7 @@ class ParitiesController extends GetxController {
   Future<void> createParity(
     String name,
     String symbol,
+    String apiSymbol,
     bool isEnabled,
     int orderIndex,
     int parityGroupId,
@@ -193,6 +200,7 @@ class ParitiesController extends GetxController {
       var createModel = ParityCreateModel(
         name: name,
         symbol: symbol,
+        apiSymbol: apiSymbol,
         orderIndex: orderIndex,
         parityGroupId: parityGroupId,
         isEnabled: isEnabled,
@@ -216,6 +224,7 @@ class ParitiesController extends GetxController {
     int id,
     String name,
     String symbol,
+    String apiSymbol,
     bool isEnabled,
     int orderIndex,
     int parityGroupId,
@@ -224,6 +233,7 @@ class ParitiesController extends GetxController {
       var updateModel = ParityUpdateModel(
         name: name,
         symbol: symbol,
+        apiSymbol: apiSymbol,
         orderIndex: orderIndex,
         parityGroupId: parityGroupId,
         isEnabled: isEnabled,

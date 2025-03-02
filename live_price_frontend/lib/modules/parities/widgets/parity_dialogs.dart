@@ -11,6 +11,7 @@ class ParityDialogs {
     final formKey = GlobalKey<FormState>();
     final nameController = TextEditingController(text: parity?.name);
     final symbolController = TextEditingController(text: parity?.symbol);
+    final apiSymbolController = TextEditingController(text: parity?.apiSymbol);
     final orderIndexController = TextEditingController(
       text: parity?.orderIndex.toString(),
     );
@@ -65,7 +66,8 @@ class ParityDialogs {
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      validator: (value) => value?.isEmpty == true ? 'Bu alan zorunludur' : null,
+                      validator: (value) =>
+                          value?.isEmpty == true ? 'Bu alan zorunludur' : null,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
@@ -78,7 +80,22 @@ class ParityDialogs {
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      validator: (value) => value?.isEmpty == true ? 'Bu alan zorunludur' : null,
+                      validator: (value) =>
+                          value?.isEmpty == true ? 'Bu alan zorunludur' : null,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: apiSymbolController,
+                      decoration: InputDecoration(
+                        labelText: 'API Sembol',
+                        hintText: 'Örn: XAUUSD',
+                        prefixIcon: const Icon(Icons.api),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      validator: (value) =>
+                          value?.isEmpty == true ? 'Bu alan zorunludur' : null,
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<int>(
@@ -93,18 +110,20 @@ class ParityDialogs {
                       ),
                       items: controller.parityGroups
                           .map((group) => DropdownMenuItem(
-                        value: group.id,
-                        child: Text(group.name),
-                      ))
+                                value: group.id,
+                                child: Text(group.name),
+                              ))
                           .toList(),
                       onChanged: (value) {
                         if (value != null && !isEditing) {
-                          orderIndexController.text =
-                              controller.getNextOrderIndexForGroup(value).toString();
+                          orderIndexController.text = controller
+                              .getNextOrderIndexForGroup(value)
+                              .toString();
                         }
                         controller.selectedGroupId.value = value;
                       },
-                      validator: (value) => value == null ? 'Lütfen bir grup seçin' : null,
+                      validator: (value) =>
+                          value == null ? 'Lütfen bir grup seçin' : null,
                       onSaved: (value) {
                         if (value != null) {
                           controller.selectedGroupId.value = value;
@@ -159,10 +178,10 @@ class ParityDialogs {
                             ],
                           ),
                           Obx(() => Switch(
-                            value: isEnabled.value,
-                            onChanged: (value) => isEnabled.value = value,
-                            activeColor: AppTheme.primaryColor,
-                          )),
+                                value: isEnabled.value,
+                                onChanged: (value) => isEnabled.value = value,
+                                activeColor: AppTheme.primaryColor,
+                              )),
                         ],
                       ),
                     ),
@@ -176,7 +195,8 @@ class ParityDialogs {
                   TextButton(
                     onPressed: () => Get.back(),
                     style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 12),
                     ),
                     child: const Text('İptal'),
                   ),
@@ -190,6 +210,7 @@ class ParityDialogs {
                               parity.id,
                               nameController.text,
                               symbolController.text,
+                              apiSymbolController.text,
                               isEnabled.value,
                               int.parse(orderIndexController.text),
                               controller.selectedGroupId.value!,
@@ -198,6 +219,7 @@ class ParityDialogs {
                             controller.createParity(
                               nameController.text,
                               symbolController.text,
+                              apiSymbolController.text,
                               isEnabled.value,
                               int.parse(orderIndexController.text),
                               controller.selectedGroupId.value!,
@@ -212,7 +234,8 @@ class ParityDialogs {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.primaryColor,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 12),
                       elevation: 2,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -221,7 +244,8 @@ class ParityDialogs {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(isEditing ? Icons.save : Icons.add, color: Colors.white),
+                        Icon(isEditing ? Icons.save : Icons.add,
+                            color: Colors.white),
                         const SizedBox(width: 8),
                         Text(isEditing ? 'Güncelle' : 'Ekle'),
                       ],
