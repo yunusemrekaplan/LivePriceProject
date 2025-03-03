@@ -24,6 +24,7 @@ namespace LivePriceBackend.Controllers
         {
             return await context.Users
                 .AsNoTracking()
+                .Include(u => u.Customer)
                 .Select(u => u.ToViewModel())
                 .ToListAsync();
         }
