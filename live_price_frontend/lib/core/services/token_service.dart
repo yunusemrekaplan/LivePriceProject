@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'token_manager.dart';
 
 class TokenService {
   static final TokenService _instance = TokenService._internal();
+
   factory TokenService() => _instance;
 
   late final Dio _dio;
@@ -49,30 +51,26 @@ class TokenService {
     }
 
     try {
-      final response = await _dio.post('/auth/refresh', data: {
-        'refreshToken': refreshToken,
-      });
+      final response = await _dio.post('/auth/refresh', data: jsonEncode(refreshToken));
 
       if (response.statusCode == 200) {
         final newAccessToken = response.data['accessToken'];
         final newRefreshToken = response.data['refreshToken'];
-        final newUserName = response.data['userName'];
 
         await _tokenManager.saveTokens(
           accessToken: newAccessToken,
           refreshToken: newRefreshToken,
-          userName: newUserName,
         );
       } else {
         throw DioException(
           requestOptions: RequestOptions(path: ''),
-          error: 'Failed to refresh token',
+          error: 'Failed to refresh token 3',
         );
       }
     } catch (e) {
       throw DioException(
         requestOptions: RequestOptions(path: ''),
-        error: 'Failed to refresh token',
+        error: 'Failed to refresh token 4',
       );
     }
   }

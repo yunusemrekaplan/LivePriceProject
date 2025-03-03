@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:live_price_frontend/modules/auth/services/auth_service.dart';
 import 'core/config/api_config.dart';
 import 'core/config/initial_binding.dart';
 import 'core/middleware/auth_interceptor.dart';
@@ -24,6 +25,7 @@ void main() async {
   Get.put(dio, permanent: true);
   Get.find<Dio>().interceptors.add(AuthInterceptor());
   Get.put(ApiClient(), permanent: true);
+  Get.put(AuthService(), permanent: true);
 
   runApp(const MyApp());
 }

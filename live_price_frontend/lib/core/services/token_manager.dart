@@ -68,11 +68,13 @@ class TokenManager {
   Future<void> saveTokens({
     required String accessToken,
     required String refreshToken,
-    required String userName,
+    String? userName,
   }) async {
     await setAccessToken(accessToken);
     await setRefreshToken(refreshToken);
-    await setUserName(userName);
+    if (userName != null) {
+      await setUserName(userName);
+    }
   }
 
   Future<void> clearTokens() async {

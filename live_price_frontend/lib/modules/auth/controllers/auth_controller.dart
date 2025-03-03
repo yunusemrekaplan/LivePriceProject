@@ -48,10 +48,8 @@ class AuthController extends GetxController {
     }
   }
 
-  @override
-  void onClose() {
-    usernameController.dispose();
-    passwordController.dispose();
-    super.onClose();
+  Future<void> handleLogout() async {
+    await _authService.logout();
+    Get.offAllNamed(Routes.login);
   }
 }

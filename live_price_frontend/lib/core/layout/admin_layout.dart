@@ -2,17 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:live_price_frontend/core/services/token_manager.dart';
 import 'package:live_price_frontend/modules/auth/services/auth_service.dart';
+import 'package:live_price_frontend/routes/app_pages.dart';
 import '../theme/app_theme.dart';
 
 class AdminLayout extends StatelessWidget {
   final Widget child;
   final String title;
 
-  const AdminLayout({
-    super.key,
-    required this.child,
-    required this.title,
-  });
+  const AdminLayout({super.key, required this.child, required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -83,8 +80,7 @@ class AdminLayout extends StatelessWidget {
               value: 'logout',
               child: Row(
                 children: [
-                  const Icon(Icons.logout,
-                      color: AppTheme.errorColor, size: 20),
+                  const Icon(Icons.logout, color: AppTheme.errorColor, size: 20),
                   const SizedBox(width: 12),
                   Text(
                     'Çıkış Yap',
@@ -100,7 +96,7 @@ class AdminLayout extends StatelessWidget {
           onSelected: (value) {
             if (value == 'logout') {
               Get.find<AuthService>().logout();
-              Get.offAllNamed('/login');
+              Get.offAllNamed(Routes.login);
             }
           },
         ),

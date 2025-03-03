@@ -2,11 +2,9 @@ import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:live_price_frontend/core/services/token_manager.dart';
 import 'package:live_price_frontend/core/services/token_service.dart';
+import 'package:live_price_frontend/routes/app_pages.dart';
 
 class AuthInterceptor extends Interceptor {
-  final _dio = Get.find<Dio>();
-
-
   String? getAuthorizationHeader() {
     final token = TokenManager().getAccessToken();
     return token != null ? 'Bearer $token' : null;
@@ -23,6 +21,7 @@ class AuthInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
+    final dio = Get.find<Dio>();
     var tokenService = TokenService();
 
     if (err.response?.statusCode == 401) {
@@ -32,12 +31,19 @@ class AuthInterceptor extends Interceptor {
           final authHeader = getAuthorizationHeader();
           if (authHeader != null) {
             err.requestOptions.headers['Authorization'] = authHeader;
-            final response = await _dio.fetch(err.requestOptions);
+            final response = await dio.fetch(err.requestOptions);
             return handler.resolve(response);
           }
         }
+
+        TokenManager().clearTokens();
+        Get.offAllNamed(Routes.login);
+
         return handler.next(err);
       }).catchError((error) {
+        TokenManager().clearTokens();
+        Get.offAllNamed(Routes.login);
+
         return handler.next(err);
       });
     } else {
