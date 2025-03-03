@@ -14,6 +14,7 @@
 
         public const string InvalidUsernameOrPassword = "Invalid username or password";
         public const string InvalidRefreshToken = "Invalid Refresh Token";
+        public const string InvalidOrExpiredRefreshToken = "Invalid or expired refresh token";
         public const string UsernameAlreadyExists = "Username already exists";
 
         # endregion
@@ -36,6 +37,7 @@
         public const string ParityExists = "Parity already exists";
         public const string ParityOrderIndexExists = "Parity order index already exists";
         public const string ParityNotFound = "Parity not found";
+        public const string ParityApiSymbolExists = "Parity API symbol already exists";
         
         # endregion
         

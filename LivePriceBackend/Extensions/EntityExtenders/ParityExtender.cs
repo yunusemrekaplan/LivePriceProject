@@ -12,6 +12,7 @@ public static class ParityExtender
             Id = parity.Id,
             Name = parity.Name,
             Symbol = parity.Symbol,
+            ApiSymbol = parity.ApiSymbol,
             IsEnabled = parity.IsEnabled,
             OrderIndex = parity.OrderIndex,
             ParityGroupId = parity.ParityGroupId,
@@ -29,6 +30,7 @@ public static class ParityExtender
         {
             Name = parityCreateModel.Name,
             Symbol = parityCreateModel.Symbol,
+            ApiSymbol = parityCreateModel.ApiSymbol,
             IsEnabled = parityCreateModel.IsEnabled,
             OrderIndex = parityCreateModel.OrderIndex,
             ParityGroupId = parityCreateModel.ParityGroupId
@@ -39,6 +41,7 @@ public static class ParityExtender
     {
         parity.Name = parityUpdateModel.Name ?? parity.Name;
         parity.Symbol = parityUpdateModel.Symbol ?? parity.Symbol;
+        parity.ApiSymbol = parityUpdateModel.ApiSymbol ?? parity.ApiSymbol;
         parity.IsEnabled = parityUpdateModel.IsEnabled;
         parity.OrderIndex = parityUpdateModel.OrderIndex;
         parity.ParityGroupId = parityUpdateModel.ParityGroupId;

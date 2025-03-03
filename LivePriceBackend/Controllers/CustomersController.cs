@@ -120,6 +120,10 @@ namespace LivePriceBackend.Controllers
             if (customer == null)
                 return NotFound(new { message = ErrorMessages.CustomerNotFound });
 
+            
+            var users = await context.Users.Where(u => u.CustomerId == id).ToListAsync();
+            context.Users.RemoveRange(users);
+            
             context.Customers.Remove(customer);
             await context.SaveChangesAsync();
 

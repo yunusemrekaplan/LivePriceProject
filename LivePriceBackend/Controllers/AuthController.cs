@@ -32,7 +32,7 @@ namespace LivePriceBackend.Controllers
             var refreshToken = JwtService.GenerateRefreshToken();
 
             user.RefreshToken = refreshToken;
-            user.RefreshTokenExpiry = DateTime.UtcNow.AddMinutes(10);
+            user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(7);
 
             await context.SaveChangesAsync();
 
@@ -46,6 +46,7 @@ namespace LivePriceBackend.Controllers
         }
 
         [HttpPost("refresh")]
+        [AllowAnonymous]
         [SwaggerOperation(Summary = "Refreshes the access token using a refresh token.")]
         [SwaggerResponse(200, "Token refreshed successfully", typeof(RefreshResponse))]
         [SwaggerResponse(401, "Invalid or expired refresh token")]
@@ -54,13 +55,13 @@ namespace LivePriceBackend.Controllers
             var user = await context.Users.FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
 
             if (user == null || user.RefreshTokenExpiry < DateTime.UtcNow)
-                return Unauthorized(new { message = ErrorMessages.InvalidRefreshToken });
+                return BadRequest(new { message = ErrorMessages.InvalidOrExpiredRefreshToken });
 
             var newAccessToken = jwtService.GenerateAccessToken(user);
             var newRefreshToken = JwtService.GenerateRefreshToken();
 
             user.RefreshToken = newRefreshToken;
-            user.RefreshTokenExpiry = DateTime.UtcNow.AddMinutes(30);
+            user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(7);
 
             await context.SaveChangesAsync();
 

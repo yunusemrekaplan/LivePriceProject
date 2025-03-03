@@ -6,6 +6,7 @@ public class Parity : AuditableEntity
 {
     public required string Name { get; set; } // Örneğin: "Gram Altın"
     public required string Symbol { get; set; } // Örneğin: "XAU/TRY"
+    public required string ApiSymbol { get; set; } // Örneğin: "XAUUSD"
     public bool IsEnabled { get; set; }
     public int OrderIndex { get; set; }
     public int ParityGroupId { get; set; }

@@ -60,16 +60,21 @@ public class ParitiesController(LivePriceDbContext context) : ControllerBase
     [HttpPost]
     [SwaggerOperation(Summary = "Creates a new parity", Description = "Creates a new parity with the provided details.")]
     [SwaggerResponse(StatusCodes.Status201Created, "Parity created successfully", typeof(ParityViewModel))]
-    [SwaggerResponse(StatusCodes.Status400BadRequest, "Parity already exists or Parity group not found or Parity order index already exists")]
+    [SwaggerResponse(StatusCodes.Status400BadRequest,
+        "Parity already exists or Parity group not found or Parity order index already exists")]
     public async Task<IActionResult> CreateParity(ParityCreateModel model)
     {
         if (await context.Parities.AnyAsync(p => p.Symbol == model.Symbol))
             return BadRequest(new { message = ErrorMessages.ParityExists });
 
+        if (await context.Parities.AnyAsync(p => p.ApiSymbol == model.ApiSymbol))
+            return BadRequest(new { message = ErrorMessages.ParityApiSymbolExists });
+
         if (!await context.ParityGroups.AnyAsync(pg => pg.Id == model.ParityGroupId))
             return BadRequest(new { message = ErrorMessages.ParityGroupNotFound });
 
-        if (await context.Parities.AnyAsync(p => p.OrderIndex == model.OrderIndex))
+
+        if (await context.Parities.AnyAsync(p => p.OrderIndex == model.OrderIndex && p.ParityGroupId == model.ParityGroupId))
             return BadRequest(new { message = ErrorMessages.ParityOrderIndexExists });
 
         var entity = model.ToEntity();
@@ -87,7 +92,8 @@ public class ParitiesController(LivePriceDbContext context) : ControllerBase
     /// <param name="model">ParityUpdateModel</param>
     /// <returns>Updated ParityViewModel</returns>
     [HttpPut("{id:int}")]
-    [SwaggerOperation(Summary = "Updates an existing parity", Description = "Updates the details of an existing parity based on the provided ID.")]
+    [SwaggerOperation(Summary = "Updates an existing parity",
+        Description = "Updates the details of an existing parity based on the provided ID.")]
     [SwaggerResponse(StatusCodes.Status200OK, "Parity updated successfully", typeof(ParityViewModel))]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "Parity already exists or Parity group not found")]
     [SwaggerResponse(StatusCodes.Status404NotFound, "Parity not found")]
@@ -101,15 +107,21 @@ public class ParitiesController(LivePriceDbContext context) : ControllerBase
         if (await context.Parities.AnyAsync(p => p.Symbol == model.Symbol && p.Id != id))
             return BadRequest(new { message = ErrorMessages.ParityExists });
 
+        if (await context.Parities.AnyAsync(p => p.ApiSymbol == model.ApiSymbol && p.Id != id))
+            return BadRequest(new { message = ErrorMessages.ParityApiSymbolExists });
+
         if (!await context.ParityGroups.AnyAsync(pg => pg.Id == model.ParityGroupId))
             return BadRequest(new { message = ErrorMessages.ParityGroupNotFound });
+
+        if (await context.Parities.AnyAsync(p => p.OrderIndex == model.OrderIndex && p.ParityGroupId == model.ParityGroupId && p.Id != id))
+            return BadRequest(new { message = ErrorMessages.ParityOrderIndexExists });
 
         model.UpdateEntity(entity);
         await context.SaveChangesAsync();
 
         return Ok(entity.ToViewModel());
     }
-    
+
     /// <summary>
     /// Update the status of an existing parity.
     /// </summary>
@@ -117,7 +129,8 @@ public class ParitiesController(LivePriceDbContext context) : ControllerBase
     /// <param name="isEnabled">New status</param>
     /// <returns>No content</returns>
     [HttpPatch("{id:int}/status")]
-    [SwaggerOperation(Summary = "Updates the status of an existing parity", Description = "Updates the status of an existing parity based on the provided ID.")]
+    [SwaggerOperation(Summary = "Updates the status of an existing parity",
+        Description = "Updates the status of an existing parity based on the provided ID.")]
     [SwaggerResponse(StatusCodes.Status204NoContent, "Parity status updated successfully")]
     [SwaggerResponse(StatusCodes.Status404NotFound, "Parity not found")]
     public async Task<IActionResult> UpdateParityStatus(int id, [FromBody] bool isEnabled)

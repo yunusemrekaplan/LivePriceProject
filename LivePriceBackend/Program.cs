@@ -10,22 +10,9 @@ using ProductAPI.Services.User;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// CORS Configuration
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll", corsPolicyBuilder =>
-    {
-        corsPolicyBuilder
-            .AllowAnyOrigin()
-            .AllowAnyMethod()
-            .AllowAnyHeader();
-    });
-});
-
-
 // Veritabanı bağlantısını ekleyelim
 builder.Services.AddDbContext<LivePriceDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly("LivePriceBackend")));
 
 // Register IUserService
 builder.Services.AddHttpContextAccessor();
@@ -44,18 +31,33 @@ builder.Services.AddAuthentication(options =>
     })
     .AddJwtBearer(options =>
     {
-        options.RequireHttpsMetadata = false;
         options.SaveToken = true;
+        options.RequireHttpsMetadata = false;
         options.TokenValidationParameters = new TokenValidationParameters
         {
+            ClockSkew = TimeSpan.Zero,
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
             ValidIssuer = jwtSettings["Issuer"],
             ValidAudience = jwtSettings["Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(key)
         };
     });
+
+
+// CORS Configuration
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", corsPolicyBuilder =>
+    {
+        corsPolicyBuilder
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
 
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
@@ -90,8 +92,6 @@ builder.Services.AddSwaggerGen(c =>
 });
 var app = builder.Build();
 
-// Use CORS
-app.UseCors("AllowAll");
 
 // Swagger UI ekleyelim
 if (app.Environment.IsDevelopment())
@@ -100,6 +100,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseCors("AllowAll");
+app.UseAuthentication();
 app.UseAuthorization();
-app.MapControllers();
+app.MapControllers()
+    .RequireAuthorization();
+
 app.Run();
