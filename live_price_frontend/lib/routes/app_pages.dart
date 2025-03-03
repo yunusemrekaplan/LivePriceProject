@@ -6,6 +6,8 @@ import 'package:live_price_frontend/modules/customers/bindings/customers_binding
 import 'package:live_price_frontend/modules/customers/views/customers_view.dart';
 import 'package:live_price_frontend/modules/parity_groups/bindings/parity_groups_binding.dart';
 import 'package:live_price_frontend/modules/parity_groups/views/parity_groups_view.dart';
+import 'package:live_price_frontend/modules/users/bindings/users_binding.dart';
+import 'package:live_price_frontend/modules/users/views/users_view.dart';
 import '../modules/home/views/home_view.dart';
 import '../modules/parities/bindings/parities_binding.dart';
 import '../modules/parities/views/parities_view.dart';
@@ -42,6 +44,12 @@ class AppPages {
       name: Routes.customers,
       page: () => const CustomersView(),
       binding: CustomersBinding(),
+      middlewares: [AuthMiddleware()],
+    ),
+    GetPage(
+      name: Routes.users,
+      page: () => const UsersView(),
+      binding: UsersBinding(),
       middlewares: [AuthMiddleware()],
     ),
     /*GetPage(

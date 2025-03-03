@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import 'package:live_price_frontend/core/theme/app_colors.dart';
 import 'package:live_price_frontend/core/theme/app_sizes.dart';
 import 'package:live_price_frontend/core/theme/app_text_styles.dart';
-import 'package:live_price_frontend/modules/customers/controllers/customers_controller.dart';
+import 'package:live_price_frontend/modules/users/controllers/users_controller.dart';
 
-class CustomerTable extends GetView<CustomersController> {
-  const CustomerTable({super.key});
+class UserTable extends GetView<UsersController> {
+  const UserTable({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -22,19 +21,19 @@ class CustomerTable extends GetView<CustomersController> {
             );
           }
 
-          if (controller.customers.isEmpty) {
+          if (controller.users.isEmpty) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    Icons.business_outlined,
+                    Icons.people,
                     size: 64,
                     color: Colors.grey[400],
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Henüz müşteri eklenmemiş',
+                    'Henüz kullanıcı eklenmemiş',
                     style: TextStyle(
                       fontSize: 18,
                       color: Colors.grey[600],
@@ -43,7 +42,7 @@ class CustomerTable extends GetView<CustomersController> {
                   const SizedBox(height: 8),
                   ElevatedButton(
                     onPressed: () => controller.showAddEditDialog(),
-                    child: const Text('Müşteri Ekle'),
+                    child: const Text('Kullanıcı Ekle'),
                   ),
                 ],
               ),
@@ -82,9 +81,12 @@ class CustomerTable extends GetView<CustomersController> {
 
   List<DataColumn> _buildColumns() {
     return [
-      _buildSortableColumn('ID', 'id'),
-      _buildSortableColumn('Müşteri Adı', 'name'),
-      _buildSortableColumn('Oluşturulma Tarihi', 'createdAt'),
+      _buildSortableColumn('Ad', 'name'),
+      _buildSortableColumn('Soyad', 'surname'),
+      _buildSortableColumn('Kullanıcı Adı', 'username'),
+      _buildSortableColumn('E-posta', 'email'),
+      _buildSortableColumn('Rol', 'role'),
+      _buildSortableColumn('Müşteri', 'customer'),
       const DataColumn(
         label: Text(
           'İşlemler',
@@ -111,11 +113,14 @@ class CustomerTable extends GetView<CustomersController> {
               onTap: () => controller.changeSort(field),
               child: Icon(
                 controller.sortField.value == field
-                    ? (controller.sortAscending.value ? Icons.arrow_upward : Icons.arrow_downward)
+                    ? (controller.sortAscending.value
+                        ? Icons.arrow_upward
+                        : Icons.arrow_downward)
                     : Icons.unfold_more,
                 size: 16,
-                color:
-                    controller.sortField.value == field ? AppColors.primaryColor : Colors.grey[400],
+                color: controller.sortField.value == field
+                    ? AppColors.primaryColor
+                    : Colors.grey[400],
               ),
             ),
           ),
@@ -125,19 +130,16 @@ class CustomerTable extends GetView<CustomersController> {
   }
 
   List<DataRow> _buildRows() {
-    return controller.paginatedCustomers.map((customer) {
+    return controller.paginatedUsers.map((user) {
       return DataRow(
         cells: [
-          DataCell(Text(customer.id.toString(), style: AppTextStyles.tableCell)),
-          DataCell(Text(customer.name, style: AppTextStyles.tableCell)),
-          customer.createdAt != null
-              ? DataCell(
-                  Text(
-                    DateFormat('dd.MM.yyyy HH:mm').format(customer.createdAt!),
-                    style: AppTextStyles.tableCell,
-                  ),
-                )
-              : const DataCell(Text('')),
+          DataCell(Text(user.name, style: AppTextStyles.tableCell)),
+          DataCell(Text(user.surname, style: AppTextStyles.tableCell)),
+          DataCell(Text(user.username, style: AppTextStyles.tableCell)),
+          DataCell(Text(user.email, style: AppTextStyles.tableCell)),
+          DataCell(Text(user.role.name, style: AppTextStyles.tableCell)),
+          DataCell(
+              Text(user.customerName ?? '-', style: AppTextStyles.tableCell)),
           DataCell(
             Row(
               mainAxisSize: MainAxisSize.min,
@@ -147,8 +149,8 @@ class CustomerTable extends GetView<CustomersController> {
                     Icons.edit,
                     color: AppColors.primaryColor,
                   ),
+                  onPressed: () => controller.showAddEditDialog(user: user),
                   tooltip: 'Düzenle',
-                  onPressed: () => controller.showAddEditDialog(customer: customer),
                 ),
                 const SizedBox(width: 8),
                 IconButton(
@@ -156,8 +158,8 @@ class CustomerTable extends GetView<CustomersController> {
                     Icons.delete,
                     color: AppColors.error,
                   ),
+                  onPressed: () => controller.showDeleteDialog(user),
                   tooltip: 'Sil',
-                  onPressed: () => controller.showDeleteDialog(customer),
                 ),
               ],
             ),

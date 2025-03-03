@@ -175,27 +175,58 @@ class CustomerDialogs {
   }
 
   static void showDeleteDialog(CustomerViewModel customer) {
-    final controller = Get.find<CustomersController>();
-
     Get.dialog(
       AlertDialog(
-        title: const Text('Müşteriyi Sil'),
-        content: Text(
-            '${customer.name} müşterisini silmek istediğinize emin misiniz?'),
+        title: const Text(
+          'Müşteri Sil',
+          style: TextStyle(
+            color: AppTheme.textColor,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '${customer.name} adlı müşteriyi silmek istediğinize emin misiniz?',
+              style: const TextStyle(fontSize: AppSizes.p16, color: AppTheme.textColor),
+            ),
+            const SizedBox(height: AppSizes.p16),
+            const Text(
+              'Bu işlem geri alınamaz.',
+              style: TextStyle(
+                color: Colors.red,
+                fontSize: AppSizes.p16,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: const Text('İptal'),
+            child: const Text(
+              'İptal',
+              style: TextStyle(
+                color: AppTheme.textColor,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.errorColor,
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
             ),
             onPressed: () {
-              controller.deleteCustomer(customer.id);
+              Get.find<CustomersController>().deleteCustomer(customer.id);
               Get.back();
             },
-            child: const Text('Sil'),
+            child: const Text(
+              'Sil',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
