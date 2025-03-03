@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:live_price_frontend/routes/app_pages.dart';
 import '../../../core/layout/admin_layout.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/services/token_manager.dart';
@@ -171,7 +172,7 @@ class HomeView extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             title,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 14,
               color: AppTheme.subtitleColor,
               fontWeight: FontWeight.w500,
@@ -210,7 +211,7 @@ class HomeView extends StatelessWidget {
                 title: 'Pariteler',
                 description: 'Pariteleri görüntüle ve yönet',
                 icon: Icons.currency_exchange,
-                route: '/parities',
+                route: Routes.parities,
                 color: AppTheme.successColor,
               ),
               const Divider(height: 32),
@@ -218,24 +219,24 @@ class HomeView extends StatelessWidget {
                 title: 'Parite Grupları',
                 description: 'Parite gruplarını düzenle',
                 icon: Icons.folder_outlined,
-                route: '/parity-groups',
+                route: Routes.parityGroups,
                 color: AppTheme.warningColor,
-              ),
-              const Divider(height: 32),
-              _buildModuleRow(
-                title: 'Kullanıcılar',
-                description: 'Kullanıcı yönetimi',
-                icon: Icons.people_outline,
-                route: '/users',
-                color: AppTheme.infoColor,
               ),
               const Divider(height: 32),
               _buildModuleRow(
                 title: 'Müşteriler',
                 description: 'Müşteri bilgilerini yönet',
                 icon: Icons.business_outlined,
-                route: '/customers',
+                route: Routes.customers,
                 color: AppTheme.accentColor,
+              ),
+              const Divider(height: 32),
+              _buildModuleRow(
+                title: 'Kullanıcılar',
+                description: 'Kullanıcı yönetimi',
+                icon: Icons.people_outline,
+                route: Routes.users,
+                color: AppTheme.infoColor,
               ),
             ],
           ),
@@ -288,7 +289,7 @@ class HomeView extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       description,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 14,
                         color: AppTheme.subtitleColor,
                       ),

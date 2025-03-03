@@ -56,7 +56,7 @@ class AppDecorations {
 
   // Button dekorasyonları
   static ButtonStyle elevatedButton = ElevatedButton.styleFrom(
-    padding: const EdgeInsets.symmetric(horizontal: AppSizes.p24, vertical: AppSizes.p16),
+    padding: const EdgeInsets.symmetric(horizontal: AppSizes.p16, vertical: AppSizes.p8),
     backgroundColor: AppColors.primaryColor,
     foregroundColor: AppColors.buttonText,
     elevation: 2,

@@ -7,7 +7,7 @@ import '../widgets/parity_group_header.dart';
 import '../widgets/parity_group_table.dart';
 
 class ParityGroupsView extends GetView<ParityGroupsController> {
-  const ParityGroupsView({Key? key}) : super(key: key);
+  const ParityGroupsView({super.key});
 
   @override
   Widget build(BuildContext context) {

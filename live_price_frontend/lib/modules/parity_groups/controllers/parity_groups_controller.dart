@@ -1,9 +1,9 @@
 import 'package:get/get.dart';
+import 'package:live_price_frontend/modules/parity_groups/models/parity_group_create_model.dart';
+import 'package:live_price_frontend/modules/parity_groups/models/parity_group_update_model.dart';
+import 'package:live_price_frontend/modules/parity_groups/models/parity_group_view_model.dart';
+import 'package:live_price_frontend/modules/parity_groups/services/parity_group_service.dart';
 import 'package:live_price_frontend/modules/parity_groups/widgets/parity_group_dialogs.dart';
-import '../models/parity_group_view_model.dart';
-import '../models/parity_group_create_model.dart';
-import '../models/parity_group_update_model.dart';
-import '../services/parity_group_service.dart';
 
 class ParityGroupsController extends GetxController {
   final ParityGroupService _parityGroupService = Get.find<ParityGroupService>();

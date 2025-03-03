@@ -126,22 +126,22 @@ class AdminLayout extends StatelessWidget {
                   _buildMenuItem(
                     icon: Icons.currency_exchange,
                     title: 'Pariteler',
-                    route: '/parities',
+                    route: Routes.parities,
                   ),
                   _buildMenuItem(
                     icon: Icons.folder_outlined,
                     title: 'Parite Grupları',
-                    route: '/parity-groups',
-                  ),
-                  _buildMenuItem(
-                    icon: Icons.people_outline,
-                    title: 'Kullanıcılar',
-                    route: '/users',
+                    route: Routes.parityGroups,
                   ),
                   _buildMenuItem(
                     icon: Icons.business_outlined,
                     title: 'Müşteriler',
-                    route: '/customers',
+                    route: Routes.customers,
+                  ),
+                  _buildMenuItem(
+                    icon: Icons.people_outline,
+                    title: 'Kullanıcılar',
+                    route: Routes.users,
                   ),
                 ],
               ),

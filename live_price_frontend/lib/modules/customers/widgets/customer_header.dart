@@ -3,10 +3,10 @@ import 'package:get/get.dart';
 import 'package:live_price_frontend/core/theme/app_decorations.dart';
 import 'package:live_price_frontend/core/theme/app_sizes.dart';
 import 'package:live_price_frontend/core/theme/app_text_styles.dart';
-import 'package:live_price_frontend/modules/parity_groups/controllers/parity_groups_controller.dart';
+import 'package:live_price_frontend/modules/customers/controllers/customers_controller.dart';
 
-class ParityGroupHeader extends GetView<ParityGroupsController> {
-  const ParityGroupHeader({super.key});
+class CustomerHeader extends GetView<CustomersController> {
+  const CustomerHeader({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -15,11 +15,11 @@ class ParityGroupHeader extends GetView<ParityGroupsController> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Parite Grupları', style: AppTextStyles.h2),
+            const Text('Müşteriler', style: AppTextStyles.h2),
             ElevatedButton.icon(
               onPressed: () => controller.showAddEditDialog(),
               icon: const Icon(Icons.add, color: Colors.white),
-              label: const Text('Yeni Grup', style: TextStyle(color: Colors.white)),
+              label: const Text('Yeni Müşteri', style: TextStyle(color: Colors.white)),
               style: AppDecorations.elevatedButton,
             ),
           ],

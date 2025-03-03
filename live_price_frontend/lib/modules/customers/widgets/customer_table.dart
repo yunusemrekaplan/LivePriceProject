@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:live_price_frontend/core/theme/app_colors.dart';
 import 'package:live_price_frontend/core/theme/app_sizes.dart';
 import 'package:live_price_frontend/core/theme/app_text_styles.dart';
-import 'package:live_price_frontend/modules/parity_groups/controllers/parity_groups_controller.dart';
+import 'package:live_price_frontend/modules/customers/controllers/customers_controller.dart';
 
-class ParityGroupTable extends GetView<ParityGroupsController> {
-  const ParityGroupTable({super.key});
+class CustomerTable extends GetView<CustomersController> {
+  const CustomerTable({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -21,19 +22,19 @@ class ParityGroupTable extends GetView<ParityGroupsController> {
             );
           }
 
-          if (controller.parityGroups.isEmpty) {
+          if (controller.customers.isEmpty) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    Icons.group_work,
+                    Icons.business_outlined,
                     size: 64,
                     color: Colors.grey[400],
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Henüz parite grubu eklenmemiş',
+                    'Henüz müşteri eklenmemiş',
                     style: TextStyle(
                       fontSize: 18,
                       color: Colors.grey[600],
@@ -42,7 +43,7 @@ class ParityGroupTable extends GetView<ParityGroupsController> {
                   const SizedBox(height: 8),
                   ElevatedButton(
                     onPressed: () => controller.showAddEditDialog(),
-                    child: const Text('Parite Grubu Ekle'),
+                    child: const Text('Müşteri Ekle'),
                   ),
                 ],
               ),
@@ -81,15 +82,9 @@ class ParityGroupTable extends GetView<ParityGroupsController> {
 
   List<DataColumn> _buildColumns() {
     return [
-      _buildSortableColumn('İsim', 'name'),
-      _buildSortableColumn('Açıklama', 'description'),
-      _buildSortableColumn('Sıra', 'orderIndex'),
-      const DataColumn(
-        label: Text(
-          'Durum',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppSizes.p16),
-        ),
-      ),
+      _buildSortableColumn('ID', 'id'),
+      _buildSortableColumn('Müşteri Adı', 'name'),
+      _buildSortableColumn('Oluşturulma Tarihi', 'createdAt'),
       const DataColumn(
         label: Text(
           'İşlemler',
@@ -130,20 +125,19 @@ class ParityGroupTable extends GetView<ParityGroupsController> {
   }
 
   List<DataRow> _buildRows() {
-    return controller.paginatedGroups.map((group) {
+    return controller.paginatedCustomers.map((customer) {
       return DataRow(
         cells: [
-          DataCell(Text(group.name, style: AppTextStyles.tableCell)),
-          DataCell(Text(group.description, style: AppTextStyles.tableCell)),
-          DataCell(Text(group.orderIndex.toString(), style: AppTextStyles.tableCell)),
-          DataCell(
-            Switch(
-              value: group.isEnabled,
-              onChanged: (value) => controller.toggleParityGroupStatus(group.id, value),
-              activeColor: AppColors.switchActive,
-              inactiveTrackColor: AppColors.switchInactive,
-            ),
-          ),
+          DataCell(Text(customer.id.toString(), style: AppTextStyles.tableCell)),
+          DataCell(Text(customer.name, style: AppTextStyles.tableCell)),
+          customer.createdAt != null
+              ? DataCell(
+                  Text(
+                    DateFormat('dd.MM.yyyy HH:mm').format(customer.createdAt!),
+                    style: AppTextStyles.tableCell,
+                  ),
+                )
+              : const DataCell(Text('')),
           DataCell(
             Row(
               mainAxisSize: MainAxisSize.min,
@@ -153,8 +147,8 @@ class ParityGroupTable extends GetView<ParityGroupsController> {
                     Icons.edit,
                     color: AppColors.primaryColor,
                   ),
-                  onPressed: () => controller.showAddEditDialog(group: group),
                   tooltip: 'Düzenle',
+                  onPressed: () => controller.showAddEditDialog(customer: customer),
                 ),
                 const SizedBox(width: 8),
                 IconButton(
@@ -162,8 +156,8 @@ class ParityGroupTable extends GetView<ParityGroupsController> {
                     Icons.delete,
                     color: AppColors.error,
                   ),
-                  onPressed: () => controller.showDeleteDialog(group),
                   tooltip: 'Sil',
+                  onPressed: () => controller.deleteCustomer(customer.id),
                 ),
               ],
             ),
