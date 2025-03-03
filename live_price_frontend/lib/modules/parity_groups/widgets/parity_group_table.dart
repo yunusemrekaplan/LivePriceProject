@@ -1,43 +1,81 @@
 import 'package:flutter/material.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_text_styles.dart';
-import '../../../core/theme/app_sizes.dart';
-import '../controllers/parity_groups_controller.dart';
-import 'parity_group_dialogs.dart';
+import 'package:get/get.dart';
+import 'package:live_price_frontend/core/theme/app_colors.dart';
+import 'package:live_price_frontend/core/theme/app_sizes.dart';
+import 'package:live_price_frontend/core/theme/app_text_styles.dart';
+import 'package:live_price_frontend/core/theme/app_theme.dart';
+import 'package:live_price_frontend/modules/parity_groups/controllers/parity_groups_controller.dart';
 
-class ParityGroupTable extends StatelessWidget {
-  final ParityGroupsController controller;
-
-  const ParityGroupTable({
-    Key? key,
-    required this.controller,
-  }) : super(key: key);
+class ParityGroupTable extends GetView<ParityGroupsController> {
+  const ParityGroupTable({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppSizes.radius8),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.shadow,
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppSizes.radius8),
-        child: DataTable(
-          headingRowColor: MaterialStateProperty.all(AppColors.tableHeader),
-          dataRowHeight: AppSizes.tableRowHeight,
-          headingRowHeight: AppSizes.tableHeaderHeight,
-          horizontalMargin: AppSizes.p24,
-          columnSpacing: AppSizes.p24,
-          columns: _buildColumns(),
-          rows: _buildRows(context),
-        ),
+    return Expanded(
+      child: Card(
+        elevation: 2,
+        clipBehavior: Clip.antiAlias,
+        child: Obx(() {
+          if (controller.isLoading.value) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          if (controller.parityGroups.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.group_work,
+                    size: 64,
+                    color: Colors.grey[400],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Henüz parite grubu eklenmemiş',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ElevatedButton(
+                    onPressed: () => controller.showAddEditDialog(),
+                    child: const Text('Parite Grubu Ekle'),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Theme(
+                    data: Theme.of(Get.context!).copyWith(
+                      cardColor: Colors.white,
+                      dividerColor: Colors.grey[200],
+                    ),
+                    child: DataTable(
+                      columns: _buildColumns(),
+                      rows: _buildRows(context),
+                      columnSpacing: 42,
+                      horizontalMargin: 32,
+                      headingRowHeight: 56,
+                      dataRowMaxHeight: 52,
+                      dataRowMinHeight: 52,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              _buildPagination(),
+            ],
+          );
+        }),
       ),
     );
   }
@@ -50,13 +88,13 @@ class ParityGroupTable extends StatelessWidget {
       const DataColumn(
         label: Text(
           'Durum',
-          style: AppTextStyles.tableHeader,
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppSizes.p16),
         ),
       ),
       const DataColumn(
         label: Text(
           'İşlemler',
-          style: AppTextStyles.tableHeader,
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppSizes.p16),
         ),
       ),
     ];
@@ -65,24 +103,30 @@ class ParityGroupTable extends StatelessWidget {
   DataColumn _buildSortableColumn(String label, String field) {
     return DataColumn(
       label: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             label,
-            style: AppTextStyles.tableHeader,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 15,
+            ),
           ),
           const SizedBox(width: 4),
-          if (controller.sortField.value == field)
-            Icon(
-              controller.sortAscending.value
-                  ? Icons.arrow_upward
-                  : Icons.arrow_downward,
-              size: AppSizes.icon16,
-              color: AppColors.primary,
+          Obx(
+            () => GestureDetector(
+              onTap: () => controller.changeSort(field),
+              child: Icon(
+                controller.sortField.value == field
+                    ? (controller.sortAscending.value ? Icons.arrow_upward : Icons.arrow_downward)
+                    : Icons.unfold_more,
+                size: 16,
+                color:
+                    controller.sortField.value == field ? AppColors.primaryColor : Colors.grey[400],
+              ),
             ),
+          ),
         ],
       ),
-      onSort: (_, __) => controller.changeSort(field),
     );
   }
 
@@ -90,24 +134,15 @@ class ParityGroupTable extends StatelessWidget {
     return controller.paginatedGroups.map((group) {
       return DataRow(
         cells: [
-          DataCell(Text(
-            group.name,
-            style: AppTextStyles.tableCell,
-          )),
-          DataCell(Text(
-            group.description,
-            style: AppTextStyles.tableCell,
-          )),
-          DataCell(Text(
-            group.orderIndex.toString(),
-            style: AppTextStyles.tableCell,
-          )),
+          DataCell(Text(group.name, style: AppTextStyles.tableCell)),
+          DataCell(Text(group.description, style: AppTextStyles.tableCell)),
+          DataCell(Text(group.orderIndex.toString(), style: AppTextStyles.tableCell)),
           DataCell(
             Switch(
               value: group.isEnabled,
-              onChanged: (value) =>
-                  controller.toggleParityGroupStatus(group.id, value),
-              activeColor: AppColors.primary,
+              onChanged: (value) => controller.toggleParityGroupStatus(group.id, value),
+              activeColor: AppColors.switchActive,
+              inactiveTrackColor: AppColors.switchInactive,
             ),
           ),
           DataCell(
@@ -115,26 +150,21 @@ class ParityGroupTable extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: () => ParityGroupDialogs.showAddEditDialog(
-                    context: context,
-                    controller: controller,
-                    group: group,
+                  icon: const Icon(
+                    Icons.edit,
+                    color: AppTheme.primaryColor,
                   ),
-                  color: AppColors.primary,
-                  iconSize: AppSizes.icon20,
-                  splashRadius: AppSizes.icon20,
+                  onPressed: () => controller.showAddEditDialog(group: group),
+                  tooltip: 'Düzenle',
                 ),
+                const SizedBox(width: 8),
                 IconButton(
-                  icon: const Icon(Icons.delete),
-                  onPressed: () => ParityGroupDialogs.showDeleteDialog(
-                    context: context,
-                    controller: controller,
-                    group: group,
+                  icon: const Icon(
+                    Icons.delete,
+                    color: AppColors.error,
                   ),
-                  color: Colors.red,
-                  iconSize: AppSizes.icon20,
-                  splashRadius: AppSizes.icon20,
+                  onPressed: () => controller.showDeleteDialog(group),
+                  tooltip: 'Sil',
                 ),
               ],
             ),
@@ -142,5 +172,37 @@ class ParityGroupTable extends StatelessWidget {
         ],
       );
     }).toList();
+  }
+
+  Widget _buildPagination() {
+    return Obx(
+      () => Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.chevron_left),
+            onPressed: controller.currentPage.value > 0
+                ? () => controller.changePage(controller.currentPage.value - 1)
+                : null,
+            color: controller.currentPage.value > 0 ? AppColors.primaryColor : AppColors.disabledButton,
+          ),
+          const SizedBox(width: 16),
+          Text(
+            'Sayfa ${controller.currentPage.value + 1} / ${controller.totalPages}',
+            style: AppTextStyles.body1,
+          ),
+          const SizedBox(width: 16),
+          IconButton(
+            icon: const Icon(Icons.chevron_right),
+            onPressed: controller.currentPage.value < controller.totalPages - 1
+                ? () => controller.changePage(controller.currentPage.value + 1)
+                : null,
+            color: controller.currentPage.value < controller.totalPages - 1
+                ? AppColors.primaryColor
+                : AppColors.disabledButton,
+          ),
+        ],
+      ),
+    );
   }
 }

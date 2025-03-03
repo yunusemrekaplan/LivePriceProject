@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   // Ana renkler
-  static const Color primary = Color(0xFF1976D2);
-  static const Color secondary = Color(0xFF424242);
-  static const Color accent = Color(0xFF03A9F4);
+  static const Color primaryColor = Color(0xFF0C4A6E); // Koyu Mavi - Ana Renk
+  static const Color secondaryColor = Color(0xFF0EA5E9); // Açık Mavi - İkincil Renk
+  static const Color accentColor = Color(0xFF0284C7); // Vurgu Rengi
+
+  // Arka Plan ve Kart Renkleri
+  static const Color backgroundColor = Color(0xFFF1F5F9); // Gri-Mavi Arka Plan
+  static const Color cardColor = Colors.white;
+  static const Color surfaceColor = Color(0xFFE2E8F0); // İkincil Arka Plan
 
   // Metin renkleri
   static const Color textPrimary = Color(0xFF212121);
@@ -35,7 +40,7 @@ class AppColors {
 
   // Input renkleri
   static const Color inputBorder = Color(0xFFE0E0E0);
-  static const Color inputFocused = primary;
+  static const Color inputFocused = primaryColor;
   static const Color inputError = error;
 
   // Table renkleri
@@ -45,7 +50,7 @@ class AppColors {
   static const Color tableBorder = Color(0xFFE0E0E0);
 
   // Switch renkleri
-  static const Color switchActive = primary;
+  static const Color switchActive = primaryColor;
   static const Color switchInactive = Color(0xFF9E9E9E);
 
   // Icon renkleri

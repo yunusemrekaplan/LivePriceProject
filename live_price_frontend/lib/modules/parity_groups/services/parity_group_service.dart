@@ -40,9 +40,9 @@ class ParityGroupService extends GetxService {
   }
 
   Future<ApiResponse> updateParityGroupStatus(int id, bool isEnabled) async {
-    final response = await _apiClient.put(
+    final response = await _apiClient.patch(
       '${ApiConfig.parityGroups}/$id/status',
-      data: {'isEnabled': isEnabled},
+      data: isEnabled,
     );
     return response;
   }

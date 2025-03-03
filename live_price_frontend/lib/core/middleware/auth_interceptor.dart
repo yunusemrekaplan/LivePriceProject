@@ -1,19 +1,20 @@
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
+import 'package:live_price_frontend/core/services/token_manager.dart';
 import 'package:live_price_frontend/core/services/token_service.dart';
 
 class AuthInterceptor extends Interceptor {
   final _dio = Get.find<Dio>();
 
-  late final TokenService _tokenService;
 
-  AuthInterceptor() {
-    _tokenService = TokenService();
+  String? getAuthorizationHeader() {
+    final token = TokenManager().getAccessToken();
+    return token != null ? 'Bearer $token' : null;
   }
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    final authHeader = _tokenService.getAuthorizationHeader();
+    final authHeader = getAuthorizationHeader();
     if (authHeader != null) {
       options.headers['Authorization'] = authHeader;
     }
@@ -22,11 +23,13 @@ class AuthInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
+    var tokenService = TokenService();
+
     if (err.response?.statusCode == 401) {
-      _tokenService.refreshTokenIfNeeded().then((success) async {
+      tokenService.refreshTokenIfNeeded().then((success) async {
         if (success) {
           // Yeni token ile isteği tekrarla
-          final authHeader = _tokenService.getAuthorizationHeader();
+          final authHeader = getAuthorizationHeader();
           if (authHeader != null) {
             err.requestOptions.headers['Authorization'] = authHeader;
             final response = await _dio.fetch(err.requestOptions);

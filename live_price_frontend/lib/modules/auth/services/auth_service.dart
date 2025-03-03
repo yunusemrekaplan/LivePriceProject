@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:live_price_frontend/core/config/api_config.dart';
 import 'package:live_price_frontend/core/models/response_model.dart';
@@ -31,7 +32,7 @@ class AuthService extends GetxService {
   Future<void> logout() async {
     final refreshToken = _tokenManager.getRefreshToken();
     if (refreshToken != null) {
-      await _apiClient.post(ApiConfig.logout, data: refreshToken);
+      await _apiClient.post(ApiConfig.logout, data: jsonEncode(refreshToken));
     }
     await _tokenManager.clearTokens();
   }

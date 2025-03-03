@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:live_price_frontend/core/theme/app_colors.dart';
+import 'package:live_price_frontend/core/theme/app_decorations.dart';
+import 'package:live_price_frontend/core/theme/app_sizes.dart';
+import 'package:live_price_frontend/core/theme/app_text_styles.dart';
 import '../../../core/theme/app_theme.dart';
 import '../controllers/parities_controller.dart';
 
@@ -13,48 +17,28 @@ class ParityHeader extends GetView<ParitiesController> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'Parite Listesi',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.textColor,
-              ),
-            ),
+            const Text('Parite Listesi', style: AppTextStyles.h2),
             ElevatedButton.icon(
-              onPressed: () =>
-                  Get.find<ParitiesController>().showAddEditDialog(),
+              onPressed: () => controller.showAddEditDialog(),
               icon: const Icon(Icons.currency_exchange, color: Colors.white),
-              label: const Text('Yeni Parite Ekle'),
-              style: ElevatedButton.styleFrom(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                backgroundColor: AppTheme.primaryColor,
-                foregroundColor: Colors.white,
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
+              label: const Text('Yeni Parite Ekle', style: TextStyle(color: Colors.white)),
+              style: AppDecorations.elevatedButton,
             ),
           ],
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: AppSizes.p24),
         Row(
           children: [
             Expanded(
               child: TextField(
                 onChanged: controller.updateSearchQuery,
-                decoration: InputDecoration(
+                decoration: AppDecorations.input.copyWith(
                   hintText: 'Parite ara...',
                   prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
                 ),
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: AppSizes.p16),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
@@ -62,23 +46,25 @@ class ParityHeader extends GetView<ParitiesController> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: DropdownButtonHideUnderline(
-                child: Obx(() => DropdownButton<int>(
-                      value: controller.selectedGroupFilter.value,
-                      hint: const Text('Tüm Gruplar'),
-                      items: [
-                        const DropdownMenuItem(
-                          value: -1,
-                          child: Text('Tüm Gruplar'),
+                child: Obx(
+                  () => DropdownButton<int>(
+                    value: controller.selectedGroupFilter.value,
+                    hint: const Text('Tüm Gruplar'),
+                    items: [
+                      const DropdownMenuItem(
+                        value: -1,
+                        child: Text('Tüm Gruplar'),
+                      ),
+                      ...controller.parityGroups.map(
+                        (group) => DropdownMenuItem(
+                          value: group.id,
+                          child: Text(group.name),
                         ),
-                        ...controller.parityGroups
-                            .map((group) => DropdownMenuItem(
-                                  value: group.id,
-                                  child: Text(group.name),
-                                )),
-                      ],
-                      onChanged: (value) =>
-                          controller.updateGroupFilter(value ?? -1),
-                    )),
+                      ),
+                    ],
+                    onChanged: (value) => controller.updateGroupFilter(value ?? -1),
+                  ),
+                ),
               ),
             ),
           ],

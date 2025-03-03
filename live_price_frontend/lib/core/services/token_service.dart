@@ -1,31 +1,41 @@
+import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
-import 'package:live_price_frontend/core/services/token_manager.dart';
+import 'token_manager.dart';
 
 class TokenService {
   static final TokenService _instance = TokenService._internal();
   factory TokenService() => _instance;
 
   late final Dio _dio;
-  late final TokenManager _tokenManager;
+  final TokenManager _tokenManager = TokenManager();
+  bool _isRefreshing = false;
+  Completer<void>? _refreshCompleter;
 
   TokenService._internal() {
     _dio = Get.find<Dio>();
-    _tokenManager = TokenManager();
-  }
-
-  String? getAuthorizationHeader() {
-    final token = _tokenManager.getAccessToken();
-    return token != null ? 'Bearer $token' : null;
   }
 
   Future<bool> refreshTokenIfNeeded() async {
+    if (_isRefreshing) {
+      await _refreshCompleter?.future;
+      return _tokenManager.hasValidAccessToken();
+    }
+
+    _isRefreshing = true;
+    _refreshCompleter = Completer<void>();
+
     try {
       await _refreshToken();
+      _refreshCompleter?.complete();
       return true;
     } catch (e) {
       _tokenManager.clearTokens();
+      _refreshCompleter?.completeError(e);
       return false;
+    } finally {
+      _isRefreshing = false;
+      _refreshCompleter = null;
     }
   }
 

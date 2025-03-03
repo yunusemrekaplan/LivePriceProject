@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:live_price_frontend/modules/parity_groups/widgets/parity_group_dialogs.dart';
 import '../models/parity_group_view_model.dart';
 import '../models/parity_group_create_model.dart';
 import '../models/parity_group_update_model.dart';
@@ -8,8 +9,7 @@ class ParityGroupsController extends GetxController {
   final ParityGroupService _parityGroupService = Get.find<ParityGroupService>();
 
   final RxBool isLoading = false.obs;
-  final RxList<ParityGroupViewModel> parityGroups =
-      <ParityGroupViewModel>[].obs;
+  final RxList<ParityGroupViewModel> parityGroups = <ParityGroupViewModel>[].obs;
 
   // Arama ve filtreleme
   final RxString searchQuery = ''.obs;
@@ -31,12 +31,8 @@ class ParityGroupsController extends GetxController {
     if (searchQuery.value.isNotEmpty) {
       filtered = filtered
           .where((group) =>
-              group.name
-                  .toLowerCase()
-                  .contains(searchQuery.value.toLowerCase()) ||
-              group.description
-                  .toLowerCase()
-                  .contains(searchQuery.value.toLowerCase()))
+              group.name.toLowerCase().contains(searchQuery.value.toLowerCase()) ||
+              group.description.toLowerCase().contains(searchQuery.value.toLowerCase()))
           .toList();
     }
 
@@ -105,9 +101,7 @@ class ParityGroupsController extends GetxController {
   // Yeni sıra numarası alma
   int getNextOrderIndex() {
     if (parityGroups.isEmpty) return 1;
-    return parityGroups
-            .map((g) => g.orderIndex)
-            .reduce((max, index) => index > max ? index : max) +
+    return parityGroups.map((g) => g.orderIndex).reduce((max, index) => index > max ? index : max) +
         1;
   }
 
@@ -118,8 +112,7 @@ class ParityGroupsController extends GetxController {
       if (response.success) {
         parityGroups.assignAll(response.data ?? []);
       } else {
-        Get.snackbar('Hata',
-            response.message ?? 'Parite grupları yüklenirken bir hata oluştu');
+        Get.snackbar('Hata', response.message ?? 'Parite grupları yüklenirken bir hata oluştu');
       }
     } finally {
       isLoading.value = false;
@@ -148,8 +141,7 @@ class ParityGroupsController extends GetxController {
         await fetchParityGroups();
         Get.snackbar('Başarılı', 'Parite grubu başarıyla eklendi');
       } else {
-        Get.snackbar('Hata',
-            response.message ?? 'Parite grubu eklenirken bir hata oluştu');
+        Get.snackbar('Hata', response.message ?? 'Parite grubu eklenirken bir hata oluştu');
       }
     } catch (e) {
       Get.snackbar('Hata', 'Parite grubu eklenirken bir hata oluştu');
@@ -180,8 +172,7 @@ class ParityGroupsController extends GetxController {
         await fetchParityGroups();
         Get.snackbar('Başarılı', 'Parite grubu başarıyla güncellendi');
       } else {
-        Get.snackbar('Hata',
-            response.message ?? 'Parite grubu güncellenirken bir hata oluştu');
+        Get.snackbar('Hata', response.message ?? 'Parite grubu güncellenirken bir hata oluştu');
       }
     } catch (e) {
       Get.snackbar('Hata', 'Parite grubu güncellenirken bir hata oluştu');
@@ -196,8 +187,7 @@ class ParityGroupsController extends GetxController {
         await fetchParityGroups();
         Get.snackbar('Başarılı', 'Parite grubu başarıyla silindi');
       } else {
-        Get.snackbar('Hata',
-            response.message ?? 'Parite grubu silinirken bir hata oluştu');
+        Get.snackbar('Hata', response.message ?? 'Parite grubu silinirken bir hata oluştu');
       }
     } catch (e) {
       Get.snackbar('Hata', 'Parite grubu silinirken bir hata oluştu');
@@ -206,20 +196,24 @@ class ParityGroupsController extends GetxController {
 
   Future<void> toggleParityGroupStatus(int id, bool isEnabled) async {
     try {
-      final response =
-          await _parityGroupService.updateParityGroupStatus(id, isEnabled);
+      final response = await _parityGroupService.updateParityGroupStatus(id, isEnabled);
 
       if (response.success) {
         await fetchParityGroups();
       } else {
         Get.snackbar(
-            'Hata',
-            response.message ??
-                'Parite grubu durumu güncellenirken bir hata oluştu');
+            'Hata', response.message ?? 'Parite grubu durumu güncellenirken bir hata oluştu');
       }
     } catch (e) {
-      Get.snackbar(
-          'Hata', 'Parite grubu durumu güncellenirken bir hata oluştu');
+      Get.snackbar('Hata', 'Parite grubu durumu güncellenirken bir hata oluştu');
     }
+  }
+
+  void showAddEditDialog({ParityGroupViewModel? group}) {
+    ParityGroupDialogs.showAddEditDialog(group: group);
+  }
+
+  void showDeleteDialog(ParityGroupViewModel group) {
+    ParityGroupDialogs.showDeleteDialog(group);
   }
 }

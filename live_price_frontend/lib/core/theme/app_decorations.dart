@@ -7,11 +7,11 @@ class AppDecorations {
   static BoxDecoration card = BoxDecoration(
     color: AppColors.cardBackground,
     borderRadius: BorderRadius.circular(AppSizes.cardBorderRadius),
-    boxShadow: [
+    boxShadow: const [
       BoxShadow(
         color: AppColors.shadow,
         blurRadius: 4,
-        offset: const Offset(0, 2),
+        offset: Offset(0, 2),
       ),
     ],
   );
@@ -19,11 +19,11 @@ class AppDecorations {
   static BoxDecoration cardHover = BoxDecoration(
     color: AppColors.cardBackground,
     borderRadius: BorderRadius.circular(AppSizes.cardBorderRadius),
-    boxShadow: [
+    boxShadow: const [
       BoxShadow(
         color: AppColors.shadow,
         blurRadius: 8,
-        offset: const Offset(0, 4),
+        offset: Offset(0, 4),
       ),
     ],
   );
@@ -56,19 +56,17 @@ class AppDecorations {
 
   // Button dekorasyonları
   static ButtonStyle elevatedButton = ElevatedButton.styleFrom(
-    backgroundColor: AppColors.primary,
+    padding: const EdgeInsets.symmetric(horizontal: AppSizes.p24, vertical: AppSizes.p16),
+    backgroundColor: AppColors.primaryColor,
     foregroundColor: AppColors.buttonText,
-    padding: const EdgeInsets.symmetric(
-      horizontal: AppSizes.p16,
-      vertical: AppSizes.p12,
-    ),
+    elevation: 2,
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(AppSizes.radius8),
     ),
   );
 
   static ButtonStyle outlinedButton = OutlinedButton.styleFrom(
-    foregroundColor: AppColors.primary,
+    foregroundColor: AppColors.primaryColor,
     padding: const EdgeInsets.symmetric(
       horizontal: AppSizes.p16,
       vertical: AppSizes.p12,
@@ -76,7 +74,7 @@ class AppDecorations {
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(AppSizes.radius8),
     ),
-    side: const BorderSide(color: AppColors.primary),
+    side: const BorderSide(color: AppColors.primaryColor),
   );
 
   // Table dekorasyonları
@@ -93,16 +91,16 @@ class AppDecorations {
     ),
   );
 
-  static BoxDecoration tableRowHover = BoxDecoration(
+  static BoxDecoration tableRowHover = const BoxDecoration(
     color: AppColors.tableRowHover,
-    border: const Border(
+    border: Border(
       bottom: BorderSide(color: AppColors.tableBorder),
     ),
   );
 
-  static BoxDecoration tableRowSelected = BoxDecoration(
+  static BoxDecoration tableRowSelected = const BoxDecoration(
     color: AppColors.tableRowSelected,
-    border: const Border(
+    border: Border(
       bottom: BorderSide(color: AppColors.tableBorder),
     ),
   );
@@ -111,11 +109,11 @@ class AppDecorations {
   static BoxDecoration dialog = BoxDecoration(
     color: AppColors.surface,
     borderRadius: BorderRadius.circular(AppSizes.radius12),
-    boxShadow: [
+    boxShadow: const [
       BoxShadow(
         color: AppColors.shadow,
         blurRadius: 16,
-        offset: const Offset(0, 8),
+        offset: Offset(0, 8),
       ),
     ],
   );

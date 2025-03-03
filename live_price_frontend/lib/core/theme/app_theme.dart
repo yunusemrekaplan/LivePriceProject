@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 class AppTheme {
   // Ana Renkler
   static const Color primaryColor = Color(0xFF0C4A6E); // Koyu Mavi - Ana Renk
-  static const Color secondaryColor =
-      Color(0xFF0EA5E9); // Açık Mavi - İkincil Renk
+  static const Color secondaryColor = Color(0xFF0EA5E9); // Açık Mavi - İkincil Renk
   static const Color accentColor = Color(0xFF0284C7); // Vurgu Rengi
 
   // Arka Plan ve Kart Renkleri
@@ -135,8 +134,7 @@ class AppTheme {
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: errorColor),
         ),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         labelStyle: TextStyle(color: Colors.grey.shade700),
         hintStyle: TextStyle(color: Colors.grey.shade500),
         prefixIconColor: Colors.grey.shade600,

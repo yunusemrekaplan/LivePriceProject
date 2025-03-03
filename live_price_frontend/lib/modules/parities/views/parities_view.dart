@@ -19,14 +19,8 @@ class ParitiesView extends GetView<ParitiesController> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ParityHeader(),
-            SizedBox(height: AppSizes.p16),
-            Expanded(
-              child: Card(
-                elevation: 2,
-                clipBehavior: Clip.antiAlias,
-                child: ParityTable(),
-              ),
-            ),
+            SizedBox(height: AppSizes.p24),
+            ParityTable(),
           ],
         ),
       ),

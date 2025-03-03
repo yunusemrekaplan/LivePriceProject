@@ -14,8 +14,7 @@ class ParitiesController extends GetxController {
 
   final RxBool isLoading = false.obs;
   final RxList<ParityViewModel> parities = <ParityViewModel>[].obs;
-  final RxList<ParityGroupViewModel> parityGroups =
-      <ParityGroupViewModel>[].obs;
+  final RxList<ParityGroupViewModel> parityGroups = <ParityGroupViewModel>[].obs;
   final Rxn<int> selectedGroupId = Rxn<int>();
 
   // Arama ve filtreleme
@@ -39,13 +38,11 @@ class ParitiesController extends GetxController {
 
   // Seçilen grup için en yüksek sıra numarasını bulma
   int getNextOrderIndexForGroup(int groupId) {
-    final groupParities =
-        parities.where((p) => p.parityGroupId == groupId).toList();
+    final groupParities = parities.where((p) => p.parityGroupId == groupId).toList();
     if (groupParities.isEmpty) return 1;
 
-    final maxOrderIndex = groupParities
-        .map((p) => p.orderIndex)
-        .reduce((max, index) => index > max ? index : max);
+    final maxOrderIndex =
+        groupParities.map((p) => p.orderIndex).reduce((max, index) => index > max ? index : max);
     return maxOrderIndex + 1;
   }
 
@@ -57,23 +54,16 @@ class ParitiesController extends GetxController {
     if (searchQuery.value.isNotEmpty) {
       filtered = filtered
           .where((parity) =>
-              parity.name
-                  .toLowerCase()
-                  .contains(searchQuery.value.toLowerCase()) ||
-              parity.symbol
-                  .toLowerCase()
-                  .contains(searchQuery.value.toLowerCase()) ||
-              parity.apiSymbol
-                  .toLowerCase()
-                  .contains(searchQuery.value.toLowerCase()))
+              parity.name.toLowerCase().contains(searchQuery.value.toLowerCase()) ||
+              parity.symbol.toLowerCase().contains(searchQuery.value.toLowerCase()) ||
+              parity.apiSymbol.toLowerCase().contains(searchQuery.value.toLowerCase()))
           .toList();
     }
 
     // Grup filtresi
     if (selectedGroupFilter.value != -1) {
-      filtered = filtered
-          .where((parity) => parity.parityGroupId == selectedGroupFilter.value)
-          .toList();
+      filtered =
+          filtered.where((parity) => parity.parityGroupId == selectedGroupFilter.value).toList();
     }
 
     // Sıralama
@@ -164,8 +154,7 @@ class ParitiesController extends GetxController {
       if (response.success) {
         parities.assignAll(response.data ?? []);
       } else {
-        Get.snackbar('Hata',
-            response.message ?? 'Pariteler yüklenirken bir hata oluştu');
+        Get.snackbar('Hata', response.message ?? 'Pariteler yüklenirken bir hata oluştu');
       }
     } finally {
       isLoading.value = false;
@@ -205,15 +194,13 @@ class ParitiesController extends GetxController {
         parityGroupId: parityGroupId,
         isEnabled: isEnabled,
       );
-      final response =
-          await _parityService.createParity(parityCreateModel: createModel);
+      final response = await _parityService.createParity(parityCreateModel: createModel);
 
       if (response.success) {
         await fetchParities();
         Get.snackbar('Başarılı', 'Parite başarıyla eklendi');
       } else {
-        Get.snackbar(
-            'Hata', response.message ?? 'Parite eklenirken bir hata oluştu');
+        Get.snackbar('Hata', response.message ?? 'Parite eklenirken bir hata oluştu');
       }
     } catch (e) {
       Get.snackbar('Hata', 'Parite eklenirken bir hata oluştu');
@@ -239,15 +226,13 @@ class ParitiesController extends GetxController {
         isEnabled: isEnabled,
       );
 
-      final response = await _parityService.updateParity(
-          id: id, parityUpdateModel: updateModel);
+      final response = await _parityService.updateParity(id: id, parityUpdateModel: updateModel);
 
       if (response.success) {
         await fetchParities();
         Get.snackbar('Başarılı', 'Parite başarıyla güncellendi');
       } else {
-        Get.snackbar('Hata',
-            response.message ?? 'Parite güncellenirken bir hata oluştu');
+        Get.snackbar('Hata', response.message ?? 'Parite güncellenirken bir hata oluştu');
       }
     } catch (e) {
       Get.snackbar('Hata', 'Parite güncellenirken bir hata oluştu');
@@ -262,8 +247,7 @@ class ParitiesController extends GetxController {
         await fetchParities();
         Get.snackbar('Başarılı', 'Parite başarıyla silindi');
       } else {
-        Get.snackbar(
-            'Hata', response.message ?? 'Parite silinirken bir hata oluştu');
+        Get.snackbar('Hata', response.message ?? 'Parite silinirken bir hata oluştu');
       }
     } catch (e) {
       Get.snackbar('Hata', 'Parite silinirken bir hata oluştu');
@@ -277,8 +261,7 @@ class ParitiesController extends GetxController {
       if (response.success) {
         await fetchParities();
       } else {
-        Get.snackbar('Hata',
-            response.message ?? 'Parite durumu güncellenirken bir hata oluştu');
+        Get.snackbar('Hata', response.message ?? 'Parite durumu güncellenirken bir hata oluştu');
       }
     } catch (e) {
       Get.snackbar('Hata', 'Parite durumu güncellenirken bir hata oluştu');
