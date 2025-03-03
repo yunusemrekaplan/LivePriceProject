@@ -26,6 +26,16 @@ class UserDialogs {
     final selectedRole = (user?.role ?? UserRole.admin).obs;
     final selectedCustomerId = (user?.customerId).obs;
 
+    // Müşteri ID'sinin geçerli olup olmadığını kontrol et
+    if (selectedCustomerId.value != null) {
+      final customerExists =
+          customers.any((c) => c.id == selectedCustomerId.value);
+      if (!customerExists) {
+        // Eğer müşteri listede yoksa, seçimi temizle
+        selectedCustomerId.value = null;
+      }
+    }
+
     Get.dialog(
       Dialog(
         shape: RoundedRectangleBorder(
@@ -140,64 +150,89 @@ class UserDialogs {
                     ),
                     const SizedBox(height: AppSizes.p16),
                     Obx(() => DropdownButtonFormField<UserRole>(
-                      decoration: AppDecorations.input.copyWith(
-                        labelText: 'Rol',
-                        prefixIcon: const Icon(Icons.admin_panel_settings),
-                      ),
-                      value: selectedRole.value,
-                      items: UserRole.values
-                          .map((role) => DropdownMenuItem(
-                        value: role,
-                        child: Text(role.name),
-                      ))
-                          .toList(),
-                      onChanged: (value) {
-                        if (value != null) {
-                          selectedRole.value = value;
-                          // Eğer admin seçilirse müşteri seçimini temizle
-                          if (value == UserRole.admin) {
-                            selectedCustomerId.value = null;
+                          decoration: AppDecorations.input.copyWith(
+                            labelText: 'Rol',
+                            prefixIcon: const Icon(Icons.admin_panel_settings),
+                          ),
+                          value: selectedRole.value,
+                          items: UserRole.values
+                              .map((role) => DropdownMenuItem(
+                                    value: role,
+                                    child: Text(role.name),
+                                  ))
+                              .toList(),
+                          onChanged: (value) {
+                            if (value != null) {
+                              selectedRole.value = value;
+                              // Eğer admin seçilirse müşteri seçimini temizle
+                              if (value == UserRole.admin) {
+                                selectedCustomerId.value = null;
+                              }
+                            }
+                          },
+                          validator: (value) {
+                            if (value == null) {
+                              return 'Rol seçiniz';
+                            }
+                            return null;
+                          },
+                        )),
+                    const SizedBox(height: AppSizes.p16),
+                    Obx(() {
+                      // Müşteri rolü seçiliyse müşteri dropdown'ını göster
+                      if (selectedRole.value == UserRole.customer) {
+                        // Müşteri listesini kontrol et ve dropdown öğelerini oluştur
+                        final dropdownItems = <DropdownMenuItem<int?>>[
+                          const DropdownMenuItem(
+                            value: null,
+                            child: Text('Müşteri Seçiniz'),
+                          ),
+                        ];
+
+                        // Müşteri listesini ekle (tekrar eden ID'leri önle)
+                        final addedIds = <int>{};
+                        for (final customer in customers) {
+                          if (!addedIds.contains(customer.id)) {
+                            dropdownItems.add(DropdownMenuItem(
+                              value: customer.id,
+                              child: Text(customer.name),
+                            ));
+                            addedIds.add(customer.id);
                           }
                         }
-                      },
-                      validator: (value) {
-                        if (value == null) {
-                          return 'Rol seçiniz';
+
+                        // Seçili ID'nin listede olup olmadığını kontrol et
+                        final selectedId = selectedCustomerId.value;
+                        final valueExists =
+                            selectedId == null || addedIds.contains(selectedId);
+
+                        // Eğer seçili değer listede yoksa null olarak ayarla
+                        if (!valueExists) {
+                          selectedCustomerId.value = null;
                         }
-                        return null;
-                      },
-                    )),
-                    const SizedBox(height: AppSizes.p16),
-                    Obx(() => selectedRole.value == UserRole.customer
-                        ? DropdownButtonFormField<int?>(
-                      decoration: AppDecorations.input.copyWith(
-                        labelText: 'Müşteri',
-                        prefixIcon: const Icon(Icons.business),
-                      ),
-                      value: selectedCustomerId.value,
-                      items: [
-                        const DropdownMenuItem(
-                          value: null,
-                          child: Text('Müşteri Seçiniz'),
-                        ),
-                        ...customers
-                            .map((customer) => DropdownMenuItem(
-                          value: customer.id,
-                          child: Text(customer.name),
-                        ))
-                            .toList(),
-                      ],
-                      onChanged: (value) {
-                        selectedCustomerId.value = value;
-                      },
-                      validator: (value) {
-                        if (selectedRole.value == UserRole.customer && value == null) {
-                          return 'Müşteri seçiniz';
-                        }
-                        return null;
-                      },
-                    )
-                        : const SizedBox.shrink()),
+
+                        return DropdownButtonFormField<int?>(
+                          decoration: AppDecorations.input.copyWith(
+                            labelText: 'Müşteri',
+                            prefixIcon: const Icon(Icons.business),
+                          ),
+                          value: valueExists ? selectedCustomerId.value : null,
+                          items: dropdownItems,
+                          onChanged: (value) {
+                            selectedCustomerId.value = value;
+                          },
+                          validator: (value) {
+                            if (selectedRole.value == UserRole.customer &&
+                                value == null) {
+                              return 'Müşteri seçiniz';
+                            }
+                            return null;
+                          },
+                        );
+                      } else {
+                        return const SizedBox.shrink();
+                      }
+                    }),
                   ],
                 ),
               ),
@@ -219,7 +254,7 @@ class UserDialogs {
                       if (formKey.currentState!.validate()) {
                         if (isEditing) {
                           controller.updateUser(
-                            user.id,
+                            user!.id,
                             usernameController.text,
                             passwordController.text.isEmpty
                                 ? null

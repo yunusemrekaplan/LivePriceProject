@@ -22,7 +22,7 @@ class UsersController extends GetxController {
   final RxInt selectedCustomerFilter = RxInt(-1);
 
   // Sıralama
-  final RxString sortField = 'name'.obs;
+  final RxString sortField = 'role'.obs;
   final RxBool sortAscending = true.obs;
 
   // Sayfalama
