@@ -12,7 +12,7 @@ public static class CustomerPriceRuleExtender
             Id = customerPriceRule.Id,
             CustomerId = customerPriceRule.CustomerId,
             ParityId = customerPriceRule.ParityId,
-            PriceRuleType = customerPriceRule.PriceRuleType,
+            PriceRuleType = customerPriceRule.SpreadRuleType,
             Value = customerPriceRule.Value,
             CustomerName = customerPriceRule.Customer?.Name,
             ParityName = customerPriceRule.Parity?.Name,
@@ -29,14 +29,14 @@ public static class CustomerPriceRuleExtender
         {
             CustomerId = customerPriceRuleCreateModel.CustomerId,
             ParityId = customerPriceRuleCreateModel.ParityId,
-            PriceRuleType = customerPriceRuleCreateModel.PriceRuleType,
+            SpreadRuleType = customerPriceRuleCreateModel.SpreadRuleType,
             Value = customerPriceRuleCreateModel.Value
         };
     }
 
     public static void UpdateEntity(this CustomerPriceRuleUpdateModel customerPriceRuleUpdateModel, CustomerPriceRule customerPriceRule)
     {
-        customerPriceRule.PriceRuleType = customerPriceRuleUpdateModel.PriceRuleType;
+        customerPriceRule.SpreadRuleType = customerPriceRuleUpdateModel.SpreadRuleType;
         customerPriceRule.Value = customerPriceRuleUpdateModel.Value;
     }
 }

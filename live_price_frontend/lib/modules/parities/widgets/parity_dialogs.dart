@@ -4,6 +4,7 @@ import 'package:live_price_frontend/core/theme/app_sizes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../controllers/parities_controller.dart';
 import '../models/parity_view_model.dart';
+import '../models/spread_rule_type.dart';
 
 class ParityDialogs {
   static void showAddEditDialog({ParityViewModel? parity}) {
@@ -12,9 +13,18 @@ class ParityDialogs {
     final formKey = GlobalKey<FormState>();
     final nameController = TextEditingController(text: parity?.name);
     final symbolController = TextEditingController(text: parity?.symbol);
-    final apiSymbolController = TextEditingController(text: parity?.apiSymbol);
-    final orderIndexController = TextEditingController(text: parity?.orderIndex.toString());
+    final apiSymbolController = TextEditingController(text: parity?.rawSymbol);
+    final orderIndexController =
+        TextEditingController(text: parity?.orderIndex.toString());
+    final scaleController =
+        TextEditingController(text: parity?.scale.toString());
+    final spreadForAskController =
+        TextEditingController(text: parity?.spreadForAsk.toString());
+    final spreadForBidController =
+        TextEditingController(text: parity?.spreadForBid.toString());
     final isEnabled = (parity?.isEnabled ?? true).obs;
+    final selectedSpreadRuleType =
+        (parity?.spreadRuleType ?? SpreadRuleType.fixed).obs;
 
     // Initialize selectedGroupId with the default selected group
     controller.selectedGroupId.value = parity?.parityGroupId;
@@ -65,7 +75,8 @@ class ParityDialogs {
                           borderRadius: BorderRadius.circular(AppSizes.radius8),
                         ),
                       ),
-                      validator: (value) => value?.isEmpty == true ? 'Bu alan zorunludur' : null,
+                      validator: (value) =>
+                          value?.isEmpty == true ? 'Bu alan zorunludur' : null,
                     ),
                     const SizedBox(height: AppSizes.p16),
                     TextFormField(
@@ -78,7 +89,8 @@ class ParityDialogs {
                           borderRadius: BorderRadius.circular(AppSizes.radius8),
                         ),
                       ),
-                      validator: (value) => value?.isEmpty == true ? 'Bu alan zorunludur' : null,
+                      validator: (value) =>
+                          value?.isEmpty == true ? 'Bu alan zorunludur' : null,
                     ),
                     const SizedBox(height: AppSizes.p16),
                     TextFormField(
@@ -91,7 +103,8 @@ class ParityDialogs {
                           borderRadius: BorderRadius.circular(AppSizes.radius8),
                         ),
                       ),
-                      validator: (value) => value?.isEmpty == true ? 'Bu alan zorunludur' : null,
+                      validator: (value) =>
+                          value?.isEmpty == true ? 'Bu alan zorunludur' : null,
                     ),
                     const SizedBox(height: AppSizes.p16),
                     DropdownButtonFormField<int>(
@@ -114,12 +127,14 @@ class ParityDialogs {
                           .toList(),
                       onChanged: (value) {
                         if (value != null && !isEditing) {
-                          orderIndexController.text =
-                              controller.getNextOrderIndexForGroup(value).toString();
+                          orderIndexController.text = controller
+                              .getNextOrderIndexForGroup(value)
+                              .toString();
                         }
                         controller.selectedGroupId.value = value;
                       },
-                      validator: (value) => value == null ? 'Lütfen bir grup seçin' : null,
+                      validator: (value) =>
+                          value == null ? 'Lütfen bir grup seçin' : null,
                       onSaved: (value) {
                         if (value != null) {
                           controller.selectedGroupId.value = value;
@@ -141,6 +156,96 @@ class ParityDialogs {
                       validator: (value) {
                         if (value?.isEmpty == true) return 'Bu alan zorunludur';
                         if (int.tryParse(value!) == null) {
+                          return 'Geçerli bir sayı girin';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: AppSizes.p16),
+                    TextFormField(
+                      controller: scaleController,
+                      decoration: InputDecoration(
+                        labelText: 'Ondalık Basamak',
+                        hintText: 'Örn: 2',
+                        prefixIcon: const Icon(Icons.scale),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppSizes.radius8),
+                        ),
+                      ),
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value?.isEmpty == true) return 'Bu alan zorunludur';
+                        if (int.tryParse(value!) == null) {
+                          return 'Geçerli bir sayı girin';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: AppSizes.p16),
+                    DropdownButtonFormField<SpreadRuleType>(
+                      value: selectedSpreadRuleType.value,
+                      decoration: InputDecoration(
+                        labelText: 'Spread Kuralı',
+                        hintText: 'Spread kuralı seçin',
+                        prefixIcon: const Icon(Icons.rule),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppSizes.radius8),
+                        ),
+                      ),
+                      items: SpreadRuleType.values
+                          .map(
+                            (type) => DropdownMenuItem(
+                              value: type,
+                              child: Text(type.name),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          selectedSpreadRuleType.value = value;
+                        }
+                      },
+                      validator: (value) => value == null
+                          ? 'Lütfen bir spread kuralı seçin'
+                          : null,
+                    ),
+                    const SizedBox(height: AppSizes.p16),
+                    TextFormField(
+                      controller: spreadForAskController,
+                      decoration: InputDecoration(
+                        labelText: 'Alış Spread Değeri',
+                        hintText: 'Örn: 0.5',
+                        prefixIcon: const Icon(Icons.trending_up),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppSizes.radius8),
+                        ),
+                      ),
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      validator: (value) {
+                        if (value?.isEmpty == true) return 'Bu alan zorunludur';
+                        if (double.tryParse(value!) == null) {
+                          return 'Geçerli bir sayı girin';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: AppSizes.p16),
+                    TextFormField(
+                      controller: spreadForBidController,
+                      decoration: InputDecoration(
+                        labelText: 'Satış Spread Değeri',
+                        hintText: 'Örn: 0.5',
+                        prefixIcon: const Icon(Icons.trending_down),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppSizes.radius8),
+                        ),
+                      ),
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      validator: (value) {
+                        if (value?.isEmpty == true) return 'Bu alan zorunludur';
+                        if (double.tryParse(value!) == null) {
                           return 'Geçerli bir sayı girin';
                         }
                         return null;
@@ -193,7 +298,8 @@ class ParityDialogs {
                   TextButton(
                     onPressed: () => Get.back(),
                     style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 12),
                     ),
                     child: const Text('İptal'),
                   ),
@@ -210,6 +316,10 @@ class ParityDialogs {
                               apiSymbolController.text,
                               isEnabled.value,
                               int.parse(orderIndexController.text),
+                              int.parse(scaleController.text),
+                              selectedSpreadRuleType.value,
+                              double.parse(spreadForAskController.text),
+                              double.parse(spreadForBidController.text),
                               controller.selectedGroupId.value!,
                             );
                           } else {
@@ -219,6 +329,10 @@ class ParityDialogs {
                               apiSymbolController.text,
                               isEnabled.value,
                               int.parse(orderIndexController.text),
+                              int.parse(scaleController.text),
+                              selectedSpreadRuleType.value,
+                              double.parse(spreadForAskController.text),
+                              double.parse(spreadForBidController.text),
                               controller.selectedGroupId.value!,
                             );
                           }
@@ -231,7 +345,8 @@ class ParityDialogs {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.primaryColor,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 12),
                       elevation: 2,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(AppSizes.radius8),
@@ -240,7 +355,8 @@ class ParityDialogs {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(isEditing ? Icons.save : Icons.add, color: Colors.white),
+                        Icon(isEditing ? Icons.save : Icons.add,
+                            color: Colors.white),
                         const SizedBox(width: AppSizes.p8),
                         Text(isEditing ? 'Güncelle' : 'Ekle'),
                       ],
@@ -271,7 +387,8 @@ class ParityDialogs {
           children: [
             Text(
               '${parity.name} paritesini silmek istediğinize emin misiniz?',
-              style: const TextStyle(fontSize: AppSizes.p16, color: AppTheme.textColor),
+              style: const TextStyle(
+                  fontSize: AppSizes.p16, color: AppTheme.textColor),
             ),
             const SizedBox(height: AppSizes.p16),
             const Text(

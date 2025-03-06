@@ -7,11 +7,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace LivePriceBackend.Controllers;
+namespace LivePriceBackend.Controllers.Admin;
 
 [Authorize]
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/admin/[controller]")]
 public class ParityGroupsController(LivePriceDbContext context) : ControllerBase
 {
     /// <summary>

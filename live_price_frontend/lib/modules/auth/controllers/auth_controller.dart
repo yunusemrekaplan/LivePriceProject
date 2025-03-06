@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:live_price_frontend/core/services/token_manager.dart';
 import 'package:live_price_frontend/modules/auth/services/auth_service.dart';
 import 'package:live_price_frontend/modules/auth/models/login_request.dart';
+import 'package:live_price_frontend/modules/users/models/user_role.dart';
 import 'package:live_price_frontend/routes/app_pages.dart';
 
 class AuthController extends GetxController {
   final _authService = Get.find<AuthService>();
+  final _tokenManager = Get.find<TokenManager>();
   final formKey = GlobalKey<FormState>();
 
   final usernameController = TextEditingController();
@@ -37,7 +40,15 @@ class AuthController extends GetxController {
       final response = await _authService.login(loginRequest);
 
       if (response.success) {
-        Get.offAllNamed(Routes.home);
+        // Kullanıcı rolüne göre yönlendirme
+        final userRole = await _tokenManager.getUserRole();
+        if (userRole == UserRole.customer.id) {
+          // Müşteri rolü için müşteri dashboard'una yönlendir
+          Get.offAllNamed(Routes.customerDashboard);
+        } else {
+          // Admin rolü için admin dashboard'una yönlendir
+          Get.offAllNamed(Routes.home);
+        }
       } else {
         errorMessage.value = response.message ?? 'Giriş işlemi başarısız oldu';
       }

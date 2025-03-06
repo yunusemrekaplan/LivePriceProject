@@ -13,6 +13,8 @@ namespace LivePriceBackend.Data
         public DbSet<Parity> Parities { get; set; }
         public DbSet<ParityGroup> ParityGroups { get; set; }
         public DbSet<CustomerPriceRule> CustomerPriceRules { get; set; }
+        public DbSet<CustomerParityVisibility> CustomerParityVisibilities { get; set; }
+        public DbSet<CustomerParityGroupVisibility> CustomerParityGroupVisibilities { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

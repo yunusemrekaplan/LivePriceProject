@@ -7,11 +7,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace LivePriceBackend.Controllers;
+namespace LivePriceBackend.Controllers.Admin;
 
 [Authorize]
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/admin/[controller]")]
 public class ParitiesController(LivePriceDbContext context) : ControllerBase
 {
     /// <summary>
@@ -67,7 +67,7 @@ public class ParitiesController(LivePriceDbContext context) : ControllerBase
         if (await context.Parities.AnyAsync(p => p.Symbol == model.Symbol))
             return BadRequest(new { message = ErrorMessages.ParityExists });
 
-        if (await context.Parities.AnyAsync(p => p.ApiSymbol == model.ApiSymbol))
+        if (await context.Parities.AnyAsync(p => p.RawSymbol == model.RawSymbol))
             return BadRequest(new { message = ErrorMessages.ParityApiSymbolExists });
 
         if (!await context.ParityGroups.AnyAsync(pg => pg.Id == model.ParityGroupId))
@@ -107,7 +107,7 @@ public class ParitiesController(LivePriceDbContext context) : ControllerBase
         if (await context.Parities.AnyAsync(p => p.Symbol == model.Symbol && p.Id != id))
             return BadRequest(new { message = ErrorMessages.ParityExists });
 
-        if (await context.Parities.AnyAsync(p => p.ApiSymbol == model.ApiSymbol && p.Id != id))
+        if (await context.Parities.AnyAsync(p => p.RawSymbol == model.RawSymbol && p.Id != id))
             return BadRequest(new { message = ErrorMessages.ParityApiSymbolExists });
 
         if (!await context.ParityGroups.AnyAsync(pg => pg.Id == model.ParityGroupId))

@@ -8,7 +8,7 @@ public class CustomerPriceRule : AuditableEntity
 {
     public required int CustomerId { get; set; }
     public required int ParityId { get; set; }
-    public required PriceRuleType PriceRuleType { get; set; }
+    public required SpreadRuleType SpreadRuleType { get; set; }
     public decimal Value { get; set; }
 
     public Customer? Customer { get; set; }

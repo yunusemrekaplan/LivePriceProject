@@ -9,8 +9,8 @@ import 'package:live_price_frontend/modules/parities/models/parity_view_model.da
 class ParityService extends GetxService {
   final ApiClient _apiClient = Get.find<ApiClient>();
 
-  Future<ApiResponse<List<ParityViewModel>>> getParities() async {
-    final response = await _apiClient.get<List<ParityViewModel>>(
+  Future<ApiResponse> getParities() async {
+    final response = await _apiClient.get(
       ApiConfig.parities,
       fromJsonList: (json) => (json).map((item) => ParityViewModel.fromJson(item)).toList(),
     );
@@ -28,11 +28,11 @@ class ParityService extends GetxService {
     return response;
   }
 
-  Future<ApiResponse<ParityViewModel>> updateParity({
+  Future<ApiResponse> updateParity({
     required int id,
     required ParityUpdateModel parityUpdateModel,
   }) async {
-    final response = await _apiClient.put<ParityViewModel>(
+    final response = await _apiClient.put(
       '${ApiConfig.parities}/$id',
       data: parityUpdateModel.toJson(),
       fromJson: (json) => ParityViewModel.fromJson(json),

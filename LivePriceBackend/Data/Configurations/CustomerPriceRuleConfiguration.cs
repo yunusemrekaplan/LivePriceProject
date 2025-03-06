@@ -22,7 +22,7 @@ public class CustomerPriceRuleConfiguration : IEntityTypeConfiguration<CustomerP
             .HasForeignKey(p => p.ParityId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.Property(c => c.PriceRuleType)
+        builder.Property(c => c.SpreadRuleType)
             .IsRequired();
         
         builder.Property(c => c.Value)

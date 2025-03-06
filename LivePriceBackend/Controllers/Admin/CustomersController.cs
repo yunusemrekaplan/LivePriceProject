@@ -7,10 +7,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace LivePriceBackend.Controllers
+namespace LivePriceBackend.Controllers.Admin
 {
     [Authorize]
-    [Route("api/[controller]")]
+    [Route("api/admin/[controller]")]
     [ApiController]
     public class CustomersController(LivePriceDbContext context) : ControllerBase
     {
@@ -84,7 +84,8 @@ namespace LivePriceBackend.Controllers
         /// <param name="model">CustomerUpdateModel</param>
         /// <returns>No content</returns>
         [HttpPut("{id:int}")]
-        [SwaggerOperation(Summary = "Updates an existing customer", Description = "Updates the details of an existing customer based on the provided ID.")]
+        [SwaggerOperation(Summary = "Updates an existing customer",
+            Description = "Updates the details of an existing customer based on the provided ID.")]
         [SwaggerResponse(StatusCodes.Status204NoContent, "Customer updated successfully")]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Customer name already exists")]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Customer not found")]
@@ -120,10 +121,10 @@ namespace LivePriceBackend.Controllers
             if (customer == null)
                 return NotFound(new { message = ErrorMessages.CustomerNotFound });
 
-            
+
             var users = await context.Users.Where(u => u.CustomerId == id).ToListAsync();
             context.Users.RemoveRange(users);
-            
+
             context.Customers.Remove(customer);
             await context.SaveChangesAsync();
 

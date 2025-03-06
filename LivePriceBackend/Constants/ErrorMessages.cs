@@ -46,5 +46,11 @@
         public const string ParityGroupExists = "Parity group already exists";
         
         # endregion
+        
+        # region AdminPriceRuleController
+        
+        public const string AdminPriceRuleNotFound = "Admin price rule not found";
+        
+        # endregion
     }
 }

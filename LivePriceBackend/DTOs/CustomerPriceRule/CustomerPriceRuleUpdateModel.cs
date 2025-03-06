@@ -4,6 +4,6 @@ namespace LivePriceBackend.DTOs.CustomerPriceRule;
 
 public class CustomerPriceRuleUpdateModel
 {
-    public required PriceRuleType PriceRuleType { get; set; }
+    public required SpreadRuleType SpreadRuleType { get; set; }
     public required decimal Value { get; set; }
 } 

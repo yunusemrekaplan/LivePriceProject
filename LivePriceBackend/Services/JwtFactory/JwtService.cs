@@ -22,9 +22,14 @@ namespace LivePriceBackend.Services.JwtFactory
                 Subject = new ClaimsIdentity(new[]
                 {
                     new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                    new Claim(ClaimTypes.Name, user.Username)
+                    new Claim(ClaimTypes.Name, user.Username),
+                    new Claim(ClaimTypes.Role, user.Role.ToString()),
+                    new Claim("CustomerId", user.CustomerId.ToString() ?? string.Empty),
+                    new Claim("ApiKey", user.Customer?.ApiKey ?? string.Empty),
+                    new Claim("CustomerName", user.Customer?.Name ?? string.Empty)
                 }),
                 Expires = DateTime.UtcNow.AddMinutes(30),
+                //Expires = DateTime.UtcNow.AddSeconds(20),
                 Issuer = _issuer,
                 Audience = _audience,
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)

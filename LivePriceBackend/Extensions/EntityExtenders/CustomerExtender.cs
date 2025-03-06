@@ -11,9 +11,10 @@ public static class CustomerExtender
         {
             Id = customer.Id,
             Name = customer.Name,
-            ApiKey = customer.ApiKey,
             Users = customer.Users?.Select(u => u.ToViewModel()).ToList(),
             CustomerPriceRules = customer.CustomerPriceRules?.Select(cpr => cpr.ToViewModel()).ToList(),
+            ParityVisibilities = customer.ParityVisibilities?.Select(pv => pv.ToViewModel()).ToList(),
+            ParityGroupVisibilities = customer.ParityGroupVisibilities?.Select(pgv => pgv.ToViewModel()).ToList(),
             CreatedAt = customer.CreatedAt,
             CreatedById = customer.CreatedById,
             UpdatedAt = customer.UpdatedAt,

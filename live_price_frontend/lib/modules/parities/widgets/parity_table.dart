@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:live_price_frontend/core/theme/app_colors.dart';
-import 'package:live_price_frontend/core/theme/app_sizes.dart';
 import 'package:live_price_frontend/core/theme/app_text_styles.dart';
 import 'package:live_price_frontend/core/theme/app_theme.dart';
 import 'package:live_price_frontend/modules/parities/controllers/parities_controller.dart';
@@ -21,7 +20,7 @@ class ParityTable extends GetView<ParitiesController> {
               child: CircularProgressIndicator(),
             );
           }
-      
+
           if (controller.parities.isEmpty) {
             return Center(
               child: Column(
@@ -49,7 +48,7 @@ class ParityTable extends GetView<ParitiesController> {
               ),
             );
           }
-      
+
           return Column(
             children: [
               Expanded(
@@ -87,16 +86,38 @@ class ParityTable extends GetView<ParitiesController> {
       _buildSortableColumn('API Sembol', 'apiSymbol'),
       _buildSortableColumn('Grup', 'group'),
       _buildSortableColumn('Sıra', 'orderIndex'),
+      _buildSortableColumn('Ondalık', 'scale'),
+      //_buildSortableColumn('Spread Tipi', 'spreadRuleType'),
+      //_buildSortableColumn('Alış Spread', 'spreadForAsk'),
+      //_buildSortableColumn('Satış Spread', 'spreadForBid'),
+      const DataColumn(
+        label: Text(
+          'Spread Tipi',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+        ),
+      ),
+      const DataColumn(
+        label: Text(
+          'Alış Spread',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+        ),
+      ),
+      const DataColumn(
+        label: Text(
+          'Satış Spread',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+        ),
+      ),
       const DataColumn(
         label: Text(
           'Durum',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppSizes.p16),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
         ),
       ),
       const DataColumn(
         label: Text(
           'İşlemler',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppSizes.p16),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
         ),
       ),
     ];
@@ -119,11 +140,14 @@ class ParityTable extends GetView<ParitiesController> {
               onTap: () => controller.changeSort(field),
               child: Icon(
                 controller.sortField.value == field
-                    ? (controller.sortAscending.value ? Icons.arrow_upward : Icons.arrow_downward)
+                    ? (controller.sortAscending.value
+                        ? Icons.arrow_upward
+                        : Icons.arrow_downward)
                     : Icons.unfold_more,
                 size: 16,
-                color:
-                    controller.sortField.value == field ? AppTheme.primaryColor : Colors.grey[400],
+                color: controller.sortField.value == field
+                    ? AppTheme.primaryColor
+                    : Colors.grey[400],
               ),
             ),
           ),
@@ -138,15 +162,26 @@ class ParityTable extends GetView<ParitiesController> {
         cells: [
           DataCell(Text(parity.name, style: AppTextStyles.tableCell)),
           DataCell(Text(parity.symbol, style: AppTextStyles.tableCell)),
-          DataCell(Text(parity.apiSymbol, style: AppTextStyles.tableCell)),
+          DataCell(Text(parity.rawSymbol, style: AppTextStyles.tableCell)),
           DataCell(
-            Text(controller.getParityGroupName(parity.parityGroupId), style: AppTextStyles.tableCell),
+            Text(controller.getParityGroupName(parity.parityGroupId),
+                style: AppTextStyles.tableCell),
           ),
-          DataCell(Text(parity.orderIndex.toString(), style: AppTextStyles.tableCell)),
+          DataCell(Text(parity.orderIndex.toString(),
+              style: AppTextStyles.tableCell)),
+          DataCell(
+              Text(parity.scale.toString(), style: AppTextStyles.tableCell)),
+          DataCell(Text(parity.spreadRuleType?.name ?? "",
+              style: AppTextStyles.tableCell)),
+          DataCell(Text(parity.spreadForAsk.toString(),
+              style: AppTextStyles.tableCell)),
+          DataCell(Text(parity.spreadForBid.toString(),
+              style: AppTextStyles.tableCell)),
           DataCell(
             Switch(
               value: parity.isEnabled,
-              onChanged: (value) => controller.toggleParityStatus(parity.id, value),
+              onChanged: (value) =>
+                  controller.toggleParityStatus(parity.id, value),
               activeColor: AppColors.switchActive,
               inactiveTrackColor: AppColors.switchInactive,
             ),

@@ -15,8 +15,8 @@ class ApiConfig {
   static const String refreshToken = '/auth/refresh-token';
   static const String logout = '/auth/logout';
 
-  static const String users = '/users';
-  static const String customers = '/customers';
-  static const String parities = '/parities';
-  static const String parityGroups = '/parityGroups';
+  static const String users = '/admin/users';
+  static const String customers = '/admin/customers';
+  static const String parities = '/admin/parities';
+  static const String parityGroups = '/admin/parityGroups';
 }

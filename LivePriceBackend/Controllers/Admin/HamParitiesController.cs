@@ -1,10 +1,10 @@
 ﻿using LivePriceBackend.Services.ParityServices;
 using Microsoft.AspNetCore.Mvc;
 
-namespace LivePriceBackend.Controllers;
+namespace LivePriceBackend.Controllers.Admin;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/admin/[controller]")]
 public class HamParitiesController : ControllerBase
 {
     [HttpGet("harem")]

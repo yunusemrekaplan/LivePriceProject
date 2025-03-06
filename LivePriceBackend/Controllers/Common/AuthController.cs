@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace LivePriceBackend.Controllers
+namespace LivePriceBackend.Controllers.Common
 {
     [Authorize]
     [Route("api/[controller]")]
@@ -33,6 +33,7 @@ namespace LivePriceBackend.Controllers
 
             user.RefreshToken = refreshToken;
             user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(7);
+            //user.RefreshTokenExpiry = DateTime.UtcNow.AddSeconds(45);
 
             await context.SaveChangesAsync();
 
@@ -62,6 +63,7 @@ namespace LivePriceBackend.Controllers
 
             user.RefreshToken = newRefreshToken;
             user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(7);
+            //user.RefreshTokenExpiry = DateTime.UtcNow.AddSeconds(45);
 
             await context.SaveChangesAsync();
 
