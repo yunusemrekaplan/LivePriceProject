@@ -30,14 +30,14 @@ public class ParityConfiguration : IEntityTypeConfiguration<Parity>
 
         builder.Property(p => p.OrderIndex)
             .IsRequired();
-        
+
         builder.Property(p => p.Scale)
             .IsRequired()
             .HasDefaultValue(2);
-        
+
         builder.Property(p => p.SpreadForBid)
             .HasColumnType("decimal(18, 6)");
-        
+
         builder.Property(p => p.SpreadForAsk)
             .HasColumnType("decimal(18, 6)");
 
@@ -47,11 +47,6 @@ public class ParityConfiguration : IEntityTypeConfiguration<Parity>
         builder.HasOne(p => p.ParityGroup)
             .WithMany(pg => pg.Parities)
             .HasForeignKey(p => p.ParityGroupId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder.HasMany(p => p.CustomerPriceRules)
-            .WithOne(c => c.Parity)
-            .HasForeignKey(c => c.ParityId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.ConfigureAuditableEntity();

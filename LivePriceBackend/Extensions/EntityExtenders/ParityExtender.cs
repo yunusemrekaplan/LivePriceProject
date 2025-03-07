@@ -20,8 +20,6 @@ public static class ParityExtender
             SpreadForAsk = parity.SpreadForAsk,
             SpreadForBid = parity.SpreadForBid,
             ParityGroupId = parity.ParityGroupId,
-            CustomerPriceRules = parity.CustomerPriceRules?.Select(cpr => cpr.ToViewModel()).ToList(),
-            CustomerVisibilities = parity.CustomerVisibilities?.Select(cpv => cpv.ToViewModel()).ToList(),
             CreatedAt = parity.CreatedAt,
             CreatedById = parity.CreatedById,
             UpdatedAt = parity.UpdatedAt,

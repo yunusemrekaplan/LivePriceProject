@@ -2,7 +2,7 @@
 
 namespace LivePriceBackend.Entities;
 
-public class CustomerParityGroupVisibility : AuditableEntity
+public class CParityGroupRule : AuditableEntity
 {
     public required int CustomerId { get; set; }
     public required int ParityGroupId { get; set; }

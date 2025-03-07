@@ -17,6 +17,4 @@ public class Parity : AuditableEntity
     public int ParityGroupId { get; set; }
 
     public ParityGroup ParityGroup { get; set; } = null!;
-    public ICollection<CustomerPriceRule>? CustomerPriceRules { get; set; }
-    public ICollection<CustomerParityVisibility>? CustomerVisibilities { get; set; }
 }

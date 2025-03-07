@@ -1,8 +1,8 @@
 ﻿using System.Linq.Expressions;
 using LivePriceBackend.Core.Entities.Infrastructure;
 using LivePriceBackend.Entities;
+using LivePriceBackend.Services.User;
 using Microsoft.EntityFrameworkCore;
-using ProductAPI.Services.User;
 
 namespace LivePriceBackend.Data
 {
@@ -12,9 +12,6 @@ namespace LivePriceBackend.Data
         public DbSet<Customer> Customers { get; set; }
         public DbSet<Parity> Parities { get; set; }
         public DbSet<ParityGroup> ParityGroups { get; set; }
-        public DbSet<CustomerPriceRule> CustomerPriceRules { get; set; }
-        public DbSet<CustomerParityVisibility> CustomerParityVisibilities { get; set; }
-        public DbSet<CustomerParityGroupVisibility> CustomerParityGroupVisibilities { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 
-namespace ProductAPI.Extensions;
+namespace LivePriceBackend.Extensions;
 
 public static class ClaimsPrincipalExtensions
 {
@@ -12,5 +12,10 @@ public static class ClaimsPrincipalExtensions
     public static int? GetUserId(this ClaimsPrincipal user)
     {
         return user.IsAuthenticated() ? int.Parse(user.Claims.First(claim => claim.Type is ClaimTypes.NameIdentifier or "nameid").Value) : null;
+    }
+    
+    public static int? GetCustomerId(this ClaimsPrincipal user)
+    {
+        return user.IsAuthenticated() ? int.Parse(user.Claims.First(claim => claim.Type == "CustomerId").Value) : null;
     }
 }

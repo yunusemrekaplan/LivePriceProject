@@ -1,5 +1,4 @@
 using LivePriceBackend.Constants.Enums;
-using LivePriceBackend.DTOs.AdminPriceRule;
 
 namespace LivePriceBackend.DTOs.Parity;
 
@@ -15,5 +14,4 @@ public class ParityCreateModel
     public decimal? SpreadForAsk { get; set; }
     public decimal? SpreadForBid { get; set; }
     public int ParityGroupId { get; set; }
-    public AdminPriceRuleCreateModel? AdminPriceRule { get; set; }
 } 

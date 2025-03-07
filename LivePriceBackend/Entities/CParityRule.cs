@@ -1,16 +1,18 @@
 ﻿using LivePriceBackend.Constants.Enums;
-using LivePriceBackend.Core.Entities;
 using LivePriceBackend.Core.Entities.Infrastructure;
 
 namespace LivePriceBackend.Entities;
 
-public class CustomerPriceRule : AuditableEntity
+public class CParityRule : AuditableEntity
 {
+    
     public required int CustomerId { get; set; }
     public required int ParityId { get; set; }
-    public required SpreadRuleType SpreadRuleType { get; set; }
-    public decimal Value { get; set; }
-
+    public bool IsVisible { get; set; }
+    public SpreadRuleType? SpreadRuleType { get; set; }
+    public decimal? SpreadForAsk { get; set; }
+    public decimal? SpreadForBid { get; set; }
+    
     public Customer? Customer { get; set; }
     public Parity? Parity { get; set; }
 }

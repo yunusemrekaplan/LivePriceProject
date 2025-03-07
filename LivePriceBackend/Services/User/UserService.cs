@@ -1,5 +1,4 @@
-﻿using ProductAPI.Extensions;
-using ProductAPI.Services.User;
+﻿using LivePriceBackend.Extensions;
 
 namespace LivePriceBackend.Services.User;
 
@@ -8,5 +7,10 @@ public class UserService(IHttpContextAccessor httpContextAccessor) : IUserServic
     public int? GetCurrentUserId()
     {
         return httpContextAccessor.HttpContext?.User.GetUserId();
+    }
+    
+    public int? GetCurrentCustomerId()
+    {
+        return httpContextAccessor.HttpContext?.User.GetCustomerId();
     }
 }

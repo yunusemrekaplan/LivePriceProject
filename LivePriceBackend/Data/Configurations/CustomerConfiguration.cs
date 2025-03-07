@@ -25,11 +25,6 @@ public class CustomerConfiguration : IEntityTypeConfiguration<Customer>
             .HasForeignKey(p => p.CustomerId)
             .OnDelete(DeleteBehavior.Cascade);
         
-        builder.HasMany(c => c.CustomerPriceRules)
-            .WithOne(p => p.Customer)
-            .HasForeignKey(p => p.CustomerId)
-            .OnDelete(DeleteBehavior.Cascade);
-        
         builder.ConfigureAuditableEntity();
     }
 }
