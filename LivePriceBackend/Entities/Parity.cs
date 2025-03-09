@@ -1,4 +1,5 @@
-﻿using LivePriceBackend.Constants.Enums;
+﻿using System.Collections;
+using LivePriceBackend.Constants.Enums;
 using LivePriceBackend.Core.Entities.Infrastructure;
 
 namespace LivePriceBackend.Entities;
@@ -17,4 +18,6 @@ public class Parity : AuditableEntity
     public int ParityGroupId { get; set; }
 
     public ParityGroup ParityGroup { get; set; } = null!;
+
+    public ICollection<CParityRule> CParityRules { get; set; } = [];
 }

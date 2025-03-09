@@ -57,4 +57,19 @@ public static class ParityExtender
         parity.SpreadForBid = parityUpdateModel.SpreadForBid;
         parity.ParityGroupId = parityUpdateModel.ParityGroupId;
     }
+    
+    public static ParityCustomerViewModel ToCustomerViewModel(this Parity parity, CParityRule? parityRule)
+    {
+        return new ParityCustomerViewModel
+        {
+            Id = parity.Id,
+            Name = parity.Name,
+            Symbol = parity.Symbol,
+            IsVisible = parityRule?.IsVisible ?? true,
+            SpreadRuleType = parityRule?.SpreadRuleType,
+            SpreadForAsk = parityRule?.SpreadForAsk,
+            SpreadForBid = parityRule?.SpreadForBid,
+            ParityGroupId = parity.ParityGroupId
+        };
+    }
 }

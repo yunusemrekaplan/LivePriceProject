@@ -24,7 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\Customer\" />
     <Folder Include="Database\" />
   </ItemGroup>
 

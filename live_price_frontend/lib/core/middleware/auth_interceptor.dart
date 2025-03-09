@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:live_price_frontend/core/services/token_manager.dart';
@@ -16,6 +18,7 @@ class AuthInterceptor extends Interceptor {
     if (authHeader != null) {
       options.headers['Authorization'] = authHeader;
     }
+
     return handler.next(options);
   }
 

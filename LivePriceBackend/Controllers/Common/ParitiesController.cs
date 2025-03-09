@@ -1,34 +1,64 @@
 ﻿using LivePriceBackend.Constants;
 using LivePriceBackend.Data;
 using LivePriceBackend.DTOs.Parity;
+using LivePriceBackend.Extensions;
 using LivePriceBackend.Extensions.EntityExtenders;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace LivePriceBackend.Controllers.Admin;
+namespace LivePriceBackend.Controllers.Common;
 
-[Authorize]
 [ApiController]
-[Route("api/admin/[controller]")]
+[Route("api/[controller]")]
 public class ParitiesController(LivePriceDbContext context) : ControllerBase
 {
     /// <summary>
     /// Get all parities.
     /// </summary>
     /// <returns>List of ParityViewModel</returns>
+    [Authorize(Roles = "Admin,Customer")]
     [HttpGet]
     [SwaggerOperation(Summary = "Retrieves all parities", Description = "Returns a list of all parities in the system.")]
     [SwaggerResponse(StatusCodes.Status200OK, "List of parities retrieved successfully", typeof(IEnumerable<ParityViewModel>))]
     public async Task<IActionResult> GetParities()
     {
-        var data = await context.Parities
+        var customerId = User.GetCustomerId();
+
+        if (customerId != null)
+        {
+            var enabledParityGroupIds = await context.ParityGroups
+                .AsNoTracking()
+                .Where(pg => pg.IsEnabled)
+                .Select(pg => pg.Id)
+                .ToListAsync();
+
+            var cParities = await context.Parities
+                .AsNoTracking()
+                .Where(p => p.IsEnabled && enabledParityGroupIds.Contains(p.ParityGroupId))
+                .ToListAsync();
+            
+            var customerRules = await context.CParityRules
+                .AsNoTracking()
+                .Where(r => r.CustomerId == customerId)
+                .ToListAsync();
+            
+            var cParityViewModels = cParities.Select(p =>
+            {
+                var rule = customerRules.FirstOrDefault(r => r.ParityId == p.Id);
+                return p.ToCustomerViewModel(rule ?? null);
+            });
+
+            return Ok(cParityViewModels);
+        }
+
+        var parities = await context.Parities
             .AsNoTracking()
             .Select(p => p.ToViewModel())
             .ToListAsync();
 
-        return Ok(data);
+        return Ok(parities);
     }
 
     /// <summary>
@@ -36,6 +66,7 @@ public class ParitiesController(LivePriceDbContext context) : ControllerBase
     /// </summary>
     /// <param name="id">Parity ID</param>
     /// <returns>ParityViewModel</returns>
+    [Authorize(Roles = "Admin")]
     [HttpGet("{id:int}")]
     [SwaggerOperation(Summary = "Retrieves a parity by ID", Description = "Returns a parity based on the provided ID.")]
     [SwaggerResponse(StatusCodes.Status200OK, "Parity retrieved successfully", typeof(ParityViewModel))]
@@ -57,6 +88,7 @@ public class ParitiesController(LivePriceDbContext context) : ControllerBase
     /// </summary>
     /// <param name="model">ParityCreateModel</param>
     /// <returns>Created ParityViewModel</returns>
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     [SwaggerOperation(Summary = "Creates a new parity", Description = "Creates a new parity with the provided details.")]
     [SwaggerResponse(StatusCodes.Status201Created, "Parity created successfully", typeof(ParityViewModel))]
@@ -91,6 +123,7 @@ public class ParitiesController(LivePriceDbContext context) : ControllerBase
     /// <param name="id">Parity ID</param>
     /// <param name="model">ParityUpdateModel</param>
     /// <returns>Updated ParityViewModel</returns>
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id:int}")]
     [SwaggerOperation(Summary = "Updates an existing parity",
         Description = "Updates the details of an existing parity based on the provided ID.")]
@@ -128,6 +161,7 @@ public class ParitiesController(LivePriceDbContext context) : ControllerBase
     /// <param name="id">Parity ID</param>
     /// <param name="isEnabled">New status</param>
     /// <returns>No content</returns>
+    [Authorize(Roles = "Admin")]
     [HttpPatch("{id:int}/status")]
     [SwaggerOperation(Summary = "Updates the status of an existing parity",
         Description = "Updates the status of an existing parity based on the provided ID.")]
@@ -151,6 +185,7 @@ public class ParitiesController(LivePriceDbContext context) : ControllerBase
     /// </summary>
     /// <param name="id">Parity ID</param>
     /// <returns>No content</returns>
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id:int}")]
     [SwaggerOperation(Summary = "Deletes a parity by ID", Description = "Deletes a parity based on the provided ID.")]
     [SwaggerResponse(StatusCodes.Status204NoContent, "Parity deleted successfully")]

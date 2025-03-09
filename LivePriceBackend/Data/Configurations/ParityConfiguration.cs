@@ -48,6 +48,11 @@ public class ParityConfiguration : IEntityTypeConfiguration<Parity>
             .WithMany(pg => pg.Parities)
             .HasForeignKey(p => p.ParityGroupId)
             .OnDelete(DeleteBehavior.Cascade);
+        
+        builder.HasMany(p => p.CParityRules)
+            .WithOne(cpr => cpr.Parity)
+            .HasForeignKey(cpr => cpr.ParityId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.ConfigureAuditableEntity();
     }

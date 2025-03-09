@@ -80,7 +80,8 @@ class AdminLayout extends StatelessWidget {
               value: 'logout',
               child: Row(
                 children: [
-                  const Icon(Icons.logout, color: AppTheme.errorColor, size: 20),
+                  const Icon(Icons.logout,
+                      color: AppTheme.errorColor, size: 20),
                   const SizedBox(width: 12),
                   Text(
                     'Çıkış Yap',
@@ -106,6 +107,10 @@ class AdminLayout extends StatelessWidget {
   }
 
   Widget _buildDrawer() {
+    final tokenManager = TokenManager();
+    final userRole = tokenManager.getUserRole();
+    final isCustomer = userRole == 'customer';
+
     return Drawer(
       backgroundColor: AppTheme.primaryColor,
       child: Column(
@@ -123,6 +128,12 @@ class AdminLayout extends StatelessWidget {
               child: ListView(
                 padding: const EdgeInsets.only(top: 16),
                 children: [
+                  if (isCustomer)
+                    _buildMenuItem(
+                      icon: Icons.dashboard_customize,
+                      title: 'Müşteri Paneli',
+                      route: Routes.customerPanel,
+                    ),
                   _buildMenuItem(
                     icon: Icons.currency_exchange,
                     title: 'Pariteler',
@@ -133,16 +144,18 @@ class AdminLayout extends StatelessWidget {
                     title: 'Parite Grupları',
                     route: Routes.parityGroups,
                   ),
-                  _buildMenuItem(
-                    icon: Icons.business_outlined,
-                    title: 'Müşteriler',
-                    route: Routes.customers,
-                  ),
-                  _buildMenuItem(
-                    icon: Icons.people_outline,
-                    title: 'Kullanıcılar',
-                    route: Routes.users,
-                  ),
+                  if (!isCustomer) ...[
+                    _buildMenuItem(
+                      icon: Icons.business_outlined,
+                      title: 'Müşteriler',
+                      route: Routes.customers,
+                    ),
+                    _buildMenuItem(
+                      icon: Icons.people_outline,
+                      title: 'Kullanıcılar',
+                      route: Routes.users,
+                    ),
+                  ],
                 ],
               ),
             ),

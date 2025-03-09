@@ -1,17 +1,19 @@
 ﻿using System.Linq.Expressions;
 using LivePriceBackend.Core.Entities.Infrastructure;
 using LivePriceBackend.Entities;
-using LivePriceBackend.Services.User;
+using LivePriceBackend.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace LivePriceBackend.Data
 {
-    public class LivePriceDbContext(DbContextOptions<LivePriceDbContext> options, IUserService userService) : DbContext(options)
+    public class LivePriceDbContext(DbContextOptions<LivePriceDbContext> options, IHttpContextAccessor httpContextAccessor) : DbContext(options)
     {
         public DbSet<User> Users { get; set; }
         public DbSet<Customer> Customers { get; set; }
         public DbSet<Parity> Parities { get; set; }
         public DbSet<ParityGroup> ParityGroups { get; set; }
+        public DbSet<CParityGroupRule> CParityGroupRules { get; set; }
+        public DbSet<CParityRule> CParityRules { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -63,7 +65,7 @@ namespace LivePriceBackend.Data
                             (e.State == EntityState.Added || e.State == EntityState.Modified || e.State == EntityState.Deleted));
 
             var currentTime = DateTime.UtcNow;
-            var currentUserId = userService.GetCurrentUserId();
+            var currentUserId = httpContextAccessor.HttpContext?.User.GetUserId();
 
             foreach (var entry in entries)
             {

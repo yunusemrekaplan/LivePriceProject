@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:live_price_frontend/core/services/token_manager.dart';
@@ -8,7 +10,7 @@ import 'package:live_price_frontend/routes/app_pages.dart';
 
 class AuthController extends GetxController {
   final _authService = Get.find<AuthService>();
-  final _tokenManager = Get.find<TokenManager>();
+  final _tokenManager = TokenManager();
   final formKey = GlobalKey<FormState>();
 
   final usernameController = TextEditingController();
@@ -41,10 +43,10 @@ class AuthController extends GetxController {
 
       if (response.success) {
         // Kullanıcı rolüne göre yönlendirme
-        final userRole = await _tokenManager.getUserRole();
-        if (userRole == UserRole.customer.id) {
+        final userRole = _tokenManager.getUserRole();
+        if (userRole == UserRole.customer.name) {
           // Müşteri rolü için müşteri dashboard'una yönlendir
-          Get.offAllNamed(Routes.customerDashboard);
+          Get.offAllNamed(Routes.customerPanel);
         } else {
           // Admin rolü için admin dashboard'una yönlendir
           Get.offAllNamed(Routes.home);

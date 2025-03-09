@@ -1,6 +1,6 @@
 enum UserRole {
   admin(0, 'Admin'),
-  customer(1, 'Müşteri');
+  customer(1, 'Customer');
 
   final int id;
   final String name;

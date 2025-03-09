@@ -17,6 +17,6 @@ class ApiConfig {
 
   static const String users = '/admin/users';
   static const String customers = '/admin/customers';
-  static const String parities = '/admin/parities';
-  static const String parityGroups = '/admin/parityGroups';
+  static const String parities = '/parities';
+  static const String parityGroups = '/parityGroups';
 }

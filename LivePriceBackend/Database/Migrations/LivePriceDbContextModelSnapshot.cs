@@ -22,6 +22,125 @@ namespace LivePriceBackend.Database.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("LivePriceBackend.Entities.CParityGroupRule", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("datetime2(0)");
+
+                    b.Property<int?>("CreatedById")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2(0)");
+
+                    b.Property<int?>("DeletedById")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsVisible")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<int>("ParityGroupId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2(0)");
+
+                    b.Property<int?>("UpdatedById")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("DeletedById");
+
+                    b.HasIndex("ParityGroupId");
+
+                    b.HasIndex("UpdatedById");
+
+                    b.ToTable("CParityGroupRules", (string)null);
+                });
+
+            modelBuilder.Entity("LivePriceBackend.Entities.CParityRule", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("datetime2(0)");
+
+                    b.Property<int?>("CreatedById")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2(0)");
+
+                    b.Property<int?>("DeletedById")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsVisible")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<int>("ParityId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("SpreadForAsk")
+                        .HasColumnType("decimal(18, 6)");
+
+                    b.Property<decimal?>("SpreadForBid")
+                        .HasColumnType("decimal(18, 6)");
+
+                    b.Property<int?>("SpreadRuleType")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2(0)");
+
+                    b.Property<int?>("UpdatedById")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("DeletedById");
+
+                    b.HasIndex("ParityId");
+
+                    b.HasIndex("UpdatedById");
+
+                    b.ToTable("CParityRules", (string)null);
+                });
+
             modelBuilder.Entity("LivePriceBackend.Entities.Customer", b =>
                 {
                     b.Property<int>("Id")
@@ -291,6 +410,80 @@ namespace LivePriceBackend.Database.Migrations
                     b.ToTable("Users", (string)null);
                 });
 
+            modelBuilder.Entity("LivePriceBackend.Entities.CParityGroupRule", b =>
+                {
+                    b.HasOne("LivePriceBackend.Entities.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById");
+
+                    b.HasOne("LivePriceBackend.Entities.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("LivePriceBackend.Entities.User", "DeletedBy")
+                        .WithMany()
+                        .HasForeignKey("DeletedById");
+
+                    b.HasOne("LivePriceBackend.Entities.ParityGroup", "ParityGroup")
+                        .WithMany("CParityGroupRules")
+                        .HasForeignKey("ParityGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("LivePriceBackend.Entities.User", "UpdatedBy")
+                        .WithMany()
+                        .HasForeignKey("UpdatedById");
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("DeletedBy");
+
+                    b.Navigation("ParityGroup");
+
+                    b.Navigation("UpdatedBy");
+                });
+
+            modelBuilder.Entity("LivePriceBackend.Entities.CParityRule", b =>
+                {
+                    b.HasOne("LivePriceBackend.Entities.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById");
+
+                    b.HasOne("LivePriceBackend.Entities.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("LivePriceBackend.Entities.User", "DeletedBy")
+                        .WithMany()
+                        .HasForeignKey("DeletedById");
+
+                    b.HasOne("LivePriceBackend.Entities.Parity", "Parity")
+                        .WithMany("CParityRules")
+                        .HasForeignKey("ParityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("LivePriceBackend.Entities.User", "UpdatedBy")
+                        .WithMany()
+                        .HasForeignKey("UpdatedById");
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("DeletedBy");
+
+                    b.Navigation("Parity");
+
+                    b.Navigation("UpdatedBy");
+                });
+
             modelBuilder.Entity("LivePriceBackend.Entities.Customer", b =>
                 {
                     b.HasOne("LivePriceBackend.Entities.User", "CreatedBy")
@@ -395,8 +588,15 @@ namespace LivePriceBackend.Database.Migrations
                     b.Navigation("Users");
                 });
 
+            modelBuilder.Entity("LivePriceBackend.Entities.Parity", b =>
+                {
+                    b.Navigation("CParityRules");
+                });
+
             modelBuilder.Entity("LivePriceBackend.Entities.ParityGroup", b =>
                 {
+                    b.Navigation("CParityGroupRules");
+
                     b.Navigation("Parities");
                 });
 #pragma warning restore 612, 618

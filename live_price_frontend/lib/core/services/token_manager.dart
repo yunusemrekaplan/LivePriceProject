@@ -1,5 +1,8 @@
+import 'dart:developer';
+
 import 'package:get_storage/get_storage.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:live_price_frontend/modules/users/models/user_role.dart';
 
 class TokenManager {
   static const String accessTokenKey = 'accessToken';
@@ -57,7 +60,7 @@ class TokenManager {
   }
 
   // Kullanıcı rolünü almak için metod
-  int? getUserRole() {
+  String? getUserRole() {
     final claims = getAccessTokenClaims();
     if (claims == null) return null;
 
@@ -68,16 +71,28 @@ class TokenManager {
 
     // Role değeri string olarak "0" veya "1" şeklinde gelebilir
     if (roleStr is String) {
-      if (roleStr == "0") return 0; // Admin
-      if (roleStr == "1") return 1; // Customer
+      if (roleStr == "0") return UserRole.admin.name; // Admin
+      if (roleStr == "1") return UserRole.customer.name; // Customer
+      return roleStr;
     }
 
     // Role değeri doğrudan int olarak gelebilir
     if (roleStr is int) {
-      return roleStr;
+      if (roleStr == 0) return UserRole.admin.name;
+      if (roleStr == 1) return UserRole.customer.name;
     }
 
     return null;
+  }
+
+  int? getCustomerId() {
+    final claims = getAccessTokenClaims();
+    if (claims == null) return null;
+
+    final customerId = claims['CustomerId'];
+    if (customerId == null) return null;
+
+    return int.tryParse(customerId.toString());
   }
 
   Future<void> setUserName(String userName) async {

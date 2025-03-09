@@ -9,8 +9,8 @@ import 'package:live_price_frontend/modules/customers/models/customer_view_model
 class CustomerService extends GetxService {
   final ApiClient _apiClient = Get.find<ApiClient>();
 
-  Future<ApiResponse<List<CustomerViewModel>>> getCustomers() async {
-    final response = await _apiClient.get<List<CustomerViewModel>>(
+  Future<ApiResponse> getCustomers() async {
+    final response = await _apiClient.get(
       ApiConfig.customers,
       fromJsonList: (json) =>
           (json).map((item) => CustomerViewModel.fromJson(item)).toList(),
@@ -18,18 +18,18 @@ class CustomerService extends GetxService {
     return response;
   }
 
-  Future<ApiResponse<CustomerViewModel>> getCustomer(int id) async {
-    final response = await _apiClient.get<CustomerViewModel>(
+  Future<ApiResponse> getCustomer(int id) async {
+    final response = await _apiClient.get(
       '${ApiConfig.customers}/$id',
       fromJson: (json) => CustomerViewModel.fromJson(json),
     );
     return response;
   }
 
-  Future<ApiResponse<CustomerViewModel>> createCustomer({
+  Future<ApiResponse> createCustomer({
     required CustomerCreateModel customerCreateModel,
   }) async {
-    final response = await _apiClient.post<CustomerViewModel>(
+    final response = await _apiClient.post(
       ApiConfig.customers,
       data: customerCreateModel.toJson(),
       fromJson: (json) => CustomerViewModel.fromJson(json),
@@ -37,14 +37,14 @@ class CustomerService extends GetxService {
     return response;
   }
 
-  Future<ApiResponse<CustomerViewModel>> updateCustomer({
+  Future<ApiResponse> updateCustomer({
     required int id,
     required CustomerUpdateModel customerUpdateModel,
   }) async {
-    final response = await _apiClient.put<CustomerViewModel>(
+    final response = await _apiClient.put(
       '${ApiConfig.customers}/$id',
       data: customerUpdateModel.toJson(),
-      fromJson: (json) => CustomerViewModel.fromJson(json),
+      //fromJson: (json) => CustomerViewModel.fromJson(json),
     );
     return response;
   }

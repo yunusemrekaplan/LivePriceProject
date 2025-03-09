@@ -10,4 +10,5 @@ public class ParityGroup : AuditableEntity
     public int OrderIndex { get; set; }
     
     public ICollection<Parity> Parities { get; set; } = [];
+    public ICollection<CParityGroupRule> CParityGroupRules { get; set; } = [];
 }

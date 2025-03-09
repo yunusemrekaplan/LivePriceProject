@@ -1,7 +1,6 @@
 using System.Text;
 using LivePriceBackend.Data;
 using LivePriceBackend.Services.JwtFactory;
-using LivePriceBackend.Services.User;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -15,7 +14,6 @@ builder.Services.AddDbContext<LivePriceDbContext>(options =>
 
 // Register IUserService
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<IUserService, UserService>();
 
 // JWT Configuration
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");

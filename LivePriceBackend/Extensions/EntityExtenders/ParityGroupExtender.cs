@@ -35,4 +35,15 @@ public static class ParityGroupExtender
         parityGroup.IsEnabled = model.IsEnabled;
         parityGroup.OrderIndex = model.OrderIndex;
     }
+
+    public static ParityGroupCustomerViewModel ToCustomerViewModel(this ParityGroup parityGroup, CParityGroupRule? rule)
+    {
+        return new ParityGroupCustomerViewModel
+        {
+            Id = parityGroup.Id,
+            Name = parityGroup.Name,
+            Description = parityGroup.Description,
+            IsVisible = rule?.IsVisible ?? true,
+        };
+    }
 }

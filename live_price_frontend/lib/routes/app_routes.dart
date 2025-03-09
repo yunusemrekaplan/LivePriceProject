@@ -7,5 +7,7 @@ abstract class Routes {
   static const parityGroups = '/parity-groups';
   static const users = '/users';
   static const customers = '/customers';
-  static const customerDashboard = '/customer-dashboard';
+  static const customerPanel = '/customer-panel';
+  static const customerParities = '/customer-parities';
+  static const customerParityGroups = '/customer-parity-groups';
 }
