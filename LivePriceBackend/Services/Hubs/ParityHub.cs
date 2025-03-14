@@ -1,24 +1,24 @@
 using LivePriceBackend.Data;
-using LivePriceBackend.Entities;
+using LivePriceBackend.Services.Hub;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace LivePriceBackend.Services.Hubs;
 
-public class ParityHub : Hub
+public class ParityHub : Microsoft.AspNetCore.SignalR.Hub
 {
-    private readonly LivePriceDbContext _context;
+    private readonly IHubAuthenticationService _authService;
+    private readonly IConnectionManagementService _connectionService;
     private readonly ILogger<ParityHub> _logger;
-    private readonly ConnectionTracker _connectionTracker;
 
     public ParityHub(
-        LivePriceDbContext context, 
-        ILogger<ParityHub> logger,
-        ConnectionTracker connectionTracker)
+        IHubAuthenticationService authService,
+        IConnectionManagementService connectionService,
+        ILogger<ParityHub> logger)
     {
-        _context = context;
+        _authService = authService;
+        _connectionService = connectionService;
         _logger = logger;
-        _connectionTracker = connectionTracker;
     }
 
     public override async Task OnConnectedAsync()
@@ -28,43 +28,30 @@ public class ParityHub : Hub
             var httpContext = Context.GetHttpContext();
             var apiKey = httpContext?.Request.Query["apiKey"].ToString();
 
-            _logger.LogInformation("Yeni bağlantı: ConnectionId={ConnectionId}, ApiKey={ApiKey}", 
-                Context.ConnectionId, apiKey);
-
-            if (string.IsNullOrWhiteSpace(apiKey))
+            _logger.LogInformation("Yeni bağlantı girişimi: ConnectionId={ConnectionId}", Context.ConnectionId);
+            
+            var (isAuthenticated, customerId, errorMessage) = await _authService.AuthenticateAsync(apiKey);
+            
+            if (!isAuthenticated || customerId == null)
             {
-                _logger.LogWarning("API Key eksik");
+                _logger.LogWarning("Kimlik doğrulama başarısız: {Error}", errorMessage);
                 Context.Abort();
                 return;
             }
 
-            var customer = await _context.Customers
-                .FirstOrDefaultAsync(c => c.ApiKey == apiKey);
-
-            if (customer == null)
+            // Bağlantıyı gruba ekle ve izlemeye al
+            var hubContext = Context.GetHttpContext()?.RequestServices.GetRequiredService<IHubContext<ParityHub>>();
+            if (hubContext != null)
             {
-                _logger.LogWarning("Geçersiz API Key: {ApiKey}", apiKey);
-                Context.Abort();
-                return;
+                await _connectionService.AddToGroupAsync(hubContext, Context.ConnectionId, customerId.Value);
+                _connectionService.TrackConnection(Context.ConnectionId, customerId.Value);
             }
-
-            // Müşteri ID'si ile bir grup oluştur (her müşteri ayrı kanalda olacak)
-            _logger.LogInformation("Müşteri bulundu: {CustomerId}, {CustomerName}", 
-                customer.Id, customer.Name);
             
-            await Groups.AddToGroupAsync(Context.ConnectionId, $"customer_{customer.Id}");
-            
-            // Bağlantıyı takip et
-            _connectionTracker.AddConnection(customer.Id, Context.ConnectionId);
-            
-            _logger.LogInformation("Müşteri {CustomerId} bağlandı, mevcut bağlantı sayısı: {ConnectionCount}", 
-                customer.Id, _connectionTracker.GetConnectedCustomerIds().Count());
-
             await base.OnConnectedAsync();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Bağlantı sırasında hata oluştu");
+            _logger.LogError(ex, "Bağlantı sırasında hata: {ConnectionId}", Context.ConnectionId);
             Context.Abort();
         }
     }
@@ -73,26 +60,33 @@ public class ParityHub : Hub
     {
         try
         {
-            var httpContext = Context.GetHttpContext();
-            var apiKey = httpContext?.Request.Query["apiKey"].ToString();
-
-            if (!string.IsNullOrWhiteSpace(apiKey))
+            _logger.LogInformation("Bağlantı koptu: {ConnectionId}", Context.ConnectionId);
+            
+            // Bağlantıyı gruptan çıkar ve izlemeden kaldır
+            var hubContext = Context.GetHttpContext()?.RequestServices.GetRequiredService<IHubContext<ParityHub>>();
+            if (hubContext != null)
             {
-                var customer = await _context.Customers
-                    .FirstOrDefaultAsync(c => c.ApiKey == apiKey);
-
-                if (customer != null)
+                var connectionId = Context.ConnectionId;
+                var connections = Context.GetHttpContext()?.RequestServices.GetRequiredService<ConnectionTracker>();
+                if (connections != null)
                 {
-                    _connectionTracker.RemoveConnection(customer.Id, Context.ConnectionId);
-                    _logger.LogInformation("Müşteri {CustomerId} bağlantısı kesildi", customer.Id);
+                    foreach (var customerId in connections.GetConnectedCustomerIds())
+                    {
+                        if (connections.GetCustomerConnections(customerId).Contains(connectionId))
+                        {
+                            await _connectionService.RemoveFromGroupAsync(hubContext, connectionId, customerId);
+                            _connectionService.RemoveConnection(connectionId, customerId);
+                            break;
+                        }
+                    }
                 }
             }
+            
+            await base.OnDisconnectedAsync(exception);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Bağlantı kesme sırasında hata oluştu");
+            _logger.LogError(ex, "Bağlantı kopması sırasında hata: {ConnectionId}", Context.ConnectionId);
         }
-
-        await base.OnDisconnectedAsync(exception);
     }
 } 

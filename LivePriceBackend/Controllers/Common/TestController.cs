@@ -1,6 +1,7 @@
 using LivePriceBackend.Data;
 using LivePriceBackend.Entities;
 using LivePriceBackend.Services;
+using LivePriceBackend.Services.Caching;
 using LivePriceBackend.Services.ParityServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,15 +17,24 @@ public class TestController : ControllerBase
     private readonly LivePriceDbContext _context;
     private readonly ILogger<TestController> _logger;
     private readonly ConnectionTracker _connectionTracker;
+    private readonly ParityCache _parityCache;
+    private readonly IHaremService _haremService;
+    private readonly CacheInvalidator _cacheInvalidator;
 
     public TestController(
         LivePriceDbContext context,
         ILogger<TestController> logger,
-        ConnectionTracker connectionTracker)
+        ConnectionTracker connectionTracker,
+        ParityCache parityCache,
+        IHaremService haremService,
+        CacheInvalidator cacheInvalidator)
     {
         _context = context;
         _logger = logger;
         _connectionTracker = connectionTracker;
+        _parityCache = parityCache;
+        _haremService = haremService;
+        _cacheInvalidator = cacheInvalidator;
     }
 
     [HttpGet("ping")]
@@ -38,23 +48,17 @@ public class TestController : ControllerBase
     {
         try
         {
-            var result = await HaremService.GetAll();
+            var data = await _haremService.GetAllAsync();
             return Ok(new
             {
-                success = true,
-                count = result.Count,
-                data = result
+                count = data.Count,
+                data = data
             });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "API çağrısı sırasında hata oluştu");
-            return StatusCode(500, new
-            {
-                success = false,
-                message = ex.Message,
-                stackTrace = ex.StackTrace
-            });
+            _logger.LogError(ex, "HaremService verisi alınırken hata oluştu");
+            return StatusCode(500, new { error = "Veri alınamadı", message = ex.Message });
         }
     }
 
@@ -112,5 +116,90 @@ public class TestController : ControllerBase
             parityRules,
             groupRules
         });
+    }
+
+    [HttpGet("refresh-cache")]
+    public async Task<IActionResult> RefreshCache()
+    {
+        try
+        {
+            await _cacheInvalidator.InvalidateAllCacheAsync();
+            return Ok(new { message = "Tüm önbellek başarıyla temizlendi" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Önbellek temizlenirken hata oluştu");
+            return StatusCode(500, new { error = "Önbellek temizlenirken bir hata oluştu", message = ex.Message });
+        }
+    }
+
+    [HttpGet("refresh-customer-cache/{customerId}")]
+    public async Task<IActionResult> RefreshCustomerCache(int customerId)
+    {
+        try
+        {
+            await _cacheInvalidator.InvalidateCustomerCacheAsync(customerId);
+            return Ok(new { message = $"Müşteri {customerId} önbelleği başarıyla temizlendi" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Müşteri önbelleği temizlenirken hata oluştu");
+            return StatusCode(500, new { error = "Müşteri önbelleği temizlenirken bir hata oluştu", message = ex.Message });
+        }
+    }
+    
+    [HttpGet("refresh-parity-cache/{parityId}")]
+    public async Task<IActionResult> RefreshParityCache(int parityId)
+    {
+        try
+        {
+            await _cacheInvalidator.InvalidateParityCacheAsync(parityId);
+            return Ok(new { message = $"Parite {parityId} önbelleği başarıyla temizlendi" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Parite önbelleği temizlenirken hata oluştu");
+            return StatusCode(500, new { error = "Parite önbelleği temizlenirken bir hata oluştu", message = ex.Message });
+        }
+    }
+    
+    [HttpGet("refresh-group-cache/{groupId}")]
+    public async Task<IActionResult> RefreshGroupCache(int groupId)
+    {
+        try
+        {
+            await _cacheInvalidator.InvalidateParityGroupCacheAsync(groupId);
+            return Ok(new { message = $"Parite grubu {groupId} önbelleği başarıyla temizlendi" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Parite grubu önbelleği temizlenirken hata oluştu");
+            return StatusCode(500, new { error = "Parite grubu önbelleği temizlenirken bir hata oluştu", message = ex.Message });
+        }
+    }
+
+    [HttpGet("enable-customers")]
+    public async Task<IActionResult> EnableCustomers()
+    {
+        try
+        {
+            var customers = await _context.Customers.ToListAsync();
+            int count = 0;
+            
+            foreach (var customer in customers)
+            {
+                customer.IsEnabled = true;
+                count++;
+            }
+            
+            await _context.SaveChangesAsync();
+            
+            return Ok(new { message = $"{count} müşteri aktif edildi" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Müşteriler aktif edilirken hata oluştu");
+            return StatusCode(500, new { error = "Müşterileri aktif etme sırasında bir hata oluştu", message = ex.Message });
+        }
     }
 } 

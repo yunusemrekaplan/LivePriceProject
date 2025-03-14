@@ -7,13 +7,6 @@ namespace LivePriceBackend.Controllers.Admin;
 [Route("api/admin/[controller]")]
 public class HamParitiesController : ControllerBase
 {
-    [HttpGet("harem")]
-    public async Task<IActionResult> GetHarem()
-    {
-        var data = await HaremService.GetAll();
-        return Ok(data);
-    }
-    
     [HttpGet("luna")]
     public async Task<IActionResult> GetLuna()
     {
