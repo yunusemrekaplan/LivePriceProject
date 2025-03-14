@@ -8,35 +8,20 @@ using System.Diagnostics;
 
 namespace LivePriceBackend.Services.BackgroundServices;
 
-public class ParityBroadcastService : BackgroundService
+public class ParityBroadcastService(
+    IServiceProvider serviceProvider,
+    IHubContext<ParityHub> hubContext,
+    ILogger<ParityBroadcastService> logger,
+    ConnectionTracker connectionTracker,
+    ParityCache parityCache,
+    IParityCalculationService calculationService)
+    : BackgroundService
 {
-    private readonly IServiceProvider _serviceProvider;
-    private readonly IHubContext<ParityHub> _hubContext;
-    private readonly ILogger<ParityBroadcastService> _logger;
-    private readonly ConnectionTracker _connectionTracker;
-    private readonly ParityCache _parityCache;
-    private readonly IParityCalculationService _calculationService;
     private readonly TimeSpan _interval = TimeSpan.FromSeconds(3); // 3 saniyede bir güncelleme
-
-    public ParityBroadcastService(
-        IServiceProvider serviceProvider,
-        IHubContext<ParityHub> hubContext,
-        ILogger<ParityBroadcastService> logger,
-        ConnectionTracker connectionTracker,
-        ParityCache parityCache,
-        IParityCalculationService calculationService)
-    {
-        _serviceProvider = serviceProvider;
-        _hubContext = hubContext;
-        _logger = logger;
-        _connectionTracker = connectionTracker;
-        _parityCache = parityCache;
-        _calculationService = calculationService;
-    }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Parite Yayın Servisi başlatıldı");
+        logger.LogInformation("Parite Yayın Servisi başlatıldı");
 
         using var timer = new PeriodicTimer(_interval);
 
@@ -45,19 +30,19 @@ public class ParityBroadcastService : BackgroundService
             try
             {
                 var stopwatch = Stopwatch.StartNew();
-                
+
                 await FetchAndBroadcastParitiesAsync(stoppingToken);
-                
+
                 stopwatch.Stop();
                 // Sadece uzun süren işlemleri logla
                 if (stopwatch.ElapsedMilliseconds > 1000)
                 {
-                    _logger.LogWarning("Parite yayını uzun sürdü: {ElapsedMs}ms", stopwatch.ElapsedMilliseconds);
+                    logger.LogWarning("Parite yayını uzun sürdü: {ElapsedMs}ms", stopwatch.ElapsedMilliseconds);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Parite yayını sırasında kritik hata oluştu");
+                logger.LogError(ex, "Parite yayını sırasında kritik hata oluştu");
                 await NotifySystemErrorAsync("Parite yayın servisi hatası: " + ex.Message);
             }
         }
@@ -68,52 +53,57 @@ public class ParityBroadcastService : BackgroundService
         try
         {
             // Aktif bağlantısı olan müşteri yoksa işlem yapma
-            var connectedCustomerIds = _connectionTracker.GetConnectedCustomerIds().ToList();
+            var connectedCustomerIds = connectionTracker.GetConnectedCustomerIds().ToList();
             if (connectedCustomerIds.Count == 0)
-            {
-                return;
-            }
+                return; // Hiç bağlı müşteri yok
 
-            // HaremService'den ham verileri çek
-            using var scope = _serviceProvider.CreateScope();
-            var haremService = scope.ServiceProvider.GetRequiredService<IHaremService>();
-            
+            // Cache'den verileri al
+            var dbParities = await parityCache.GetParitiesAsync();
+            var customerParityRules = await parityCache.GetParityRulesAsync(connectedCustomerIds);
+            var customerGroupRules = await parityCache.GetGroupRulesAsync(connectedCustomerIds);
+
+            // Sadece gerekli sembolleri çek
+            var symbols = dbParities.Select(p => p.RawSymbol).Distinct().ToArray();
+            if (symbols.Length == 0)
+                return; // Hiç sembol yok
+
+            logger.LogInformation("symbols: {symbol}", symbols.Length);
+
+            // XmlParityService'den ham verileri çek
+            using var scope = serviceProvider.CreateScope();
+            var xmlParityService = scope.ServiceProvider.GetRequiredService<IXmlParityService>();
+
             List<ParityHamData> hamParities;
             try
             {
-                hamParities = await haremService.GetAllAsync() ?? new List<ParityHamData>();
-                
+                hamParities = await xmlParityService.GetBySymbolsAsync(symbols, stoppingToken);
+
                 // Sadece veri çekilemediğinde logla
                 if (hamParities.Count == 0)
                 {
-                    _logger.LogWarning("HaremService'den veri alınamadı");
+                    logger.LogWarning("XmlParityService'den veri alınamadı");
                 }
             }
             catch (ExternalServiceException ex)
             {
-                _logger.LogError(ex, "HaremService veri çekme hatası: {Message}", ex.Message);
+                logger.LogError(ex, "XmlParityService veri çekme hatası: {Message}", ex.Message);
                 await NotifyCustomersAsync("VeriKaynağıHatası", "Dış servis veri kaynağı hatası", stoppingToken);
                 return;
             }
-            
-            if (!hamParities.Any())
+
+            if (hamParities.Count == 0)
             {
                 await NotifyCustomersAsync("VeriYok", "Parite verisi bulunamadı", stoppingToken);
                 return;
             }
 
-            // Cache'den verileri al
-            var dbParities = await _parityCache.GetParitiesAsync();
-            var customerParityRules = await _parityCache.GetParityRulesAsync(connectedCustomerIds);
-            var customerGroupRules = await _parityCache.GetGroupRulesAsync(connectedCustomerIds);
-
             // Her bağlı müşteri için pariteleri hazırla ve gönder
-            int successfulSendCount = 0;
-            int errorCount = 0;
-            
+            var successfulSendCount = 0;
+            var errorCount = 0;
+
             foreach (var customerId in connectedCustomerIds)
             {
-                if (!_connectionTracker.HasConnections(customerId))
+                if (!connectionTracker.HasConnections(customerId))
                     continue;
 
                 try
@@ -140,29 +130,38 @@ public class ParityBroadcastService : BackgroundService
 
                             // Parite kural kontrolü - görünürlük ve spread
                             var parityRule = customerRules.FirstOrDefault(r => r.ParityId == dbParity.Id);
-                            if (parityRule == null || !parityRule.IsVisible)
+                            if (parityRule is { IsVisible: false })
                                 continue;
 
                             // Dış servisten gelen veriyi bul
                             var hamData = hamParities.FirstOrDefault(h => h.Symbol == dbParity.RawSymbol);
                             if (hamData == null)
-                                continue;
+                                continue; // Parite verisi bulunamadı
 
-                            // Spread hesaplama servisini kullanarak fiyatları hesapla
-                            var (ask, bid) = _calculationService.ApplySpread(hamData.Ask, hamData.Bid, parityRule);
-                            
+                            // Önce DB'deki default spread değerlerini uygula
+                            var (defaultAsk, defaultBid) = calculationService.ApplySpread(
+                                hamData.Ask ?? 0,
+                                hamData.Bid ?? 0,
+                                dbParity);
+
+                            // Eğer müşteri kuralı varsa, müşteri spread'ini uygula
+                            var (finalAsk, finalBid) =
+                                parityRule != null && (parityRule.SpreadForAsk.HasValue || parityRule.SpreadForBid.HasValue)
+                                    ? calculationService.ApplySpread(defaultAsk, defaultBid, parityRule)
+                                    : (defaultAsk, defaultBid);
+
                             // Değişim oranını hesapla
-                            var change = _calculationService.CalculateChangeRate(bid, hamData.Close);
+                            var change = hamData.DailyChange ?? calculationService.CalculateChangeRate(finalBid, hamData.Close ?? 0);
 
                             // Scale değerini doğrula ve uygula
-                            int scale = dbParity.Scale < 0 ? 4 : dbParity.Scale; // Varsayılan 4 ondalık hane
+                            var scale = dbParity.Scale < 0 ? 4 : dbParity.Scale; // Varsayılan 4 ondalık hane
 
                             customerParities.Add(new
                             {
-                                Symbol = dbParity.Symbol,
-                                Ask = _calculationService.RoundPrice(ask, scale),
-                                Bid = _calculationService.RoundPrice(bid, scale),
-                                GroupName = dbParity.ParityGroup?.Name,
+                                dbParity.Name,
+                                Ask = calculationService.RoundPrice(finalAsk, scale),
+                                Bid = calculationService.RoundPrice(finalBid, scale),
+                                GroupName = dbParity.ParityGroup.Name,
                                 GroupId = dbParity.ParityGroupId,
                                 Change = change,
                                 UpdateTime = DateTime.UtcNow
@@ -170,49 +169,49 @@ public class ParityBroadcastService : BackgroundService
                         }
                         catch
                         {
-                            // Tek bir parite hatası için loglama yapmıyoruz
-                            continue;
+                            logger.LogWarning("Parite işleme hatası: {ParityName}", dbParity.Name);
                         }
                     }
 
-                    if (customerParities.Any())
+                    if (customerParities.Count != 0)
                     {
-                        await _hubContext.Clients
+                        await hubContext.Clients
                             .Group($"customer_{customerId}")
                             .SendAsync("ReceiveParities", customerParities, stoppingToken);
-                            
+
                         successfulSendCount++;
                     }
                     else
                     {
                         // Hiç parite bulunamadığında müşteriye bildirim gönder
-                        await _hubContext.Clients
+                        await hubContext.Clients
                             .Group($"customer_{customerId}")
-                            .SendAsync("SystemMessage", "Görüntülenecek parite bulunamadı. Lütfen parite ayarlarınızı kontrol ediniz.", stoppingToken);
+                            .SendAsync("SystemMessage", "Görüntülenecek parite bulunamadı. Lütfen parite ayarlarınızı kontrol ediniz.",
+                                stoppingToken);
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Müşteri {CustomerId} için parite işleme hatası", customerId);
+                    logger.LogError(ex, "Müşteri {CustomerId} için parite işleme hatası", customerId);
                     errorCount++;
                 }
             }
-            
+
             // Sadece hata olduğunda logla
             if (errorCount > 0)
             {
-                _logger.LogWarning(
-                    "Parite yayınında hatalar oluştu. Başarılı: {SuccessCount}, Hata: {ErrorCount}", 
+                logger.LogWarning(
+                    "Parite yayınında hatalar oluştu. Başarılı: {SuccessCount}, Hata: {ErrorCount}",
                     successfulSendCount, errorCount);
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Parite yayını hazırlama sırasında hata oluştu");
+            logger.LogError(ex, "Parite yayını hazırlama sırasında hata oluştu");
             await NotifySystemErrorAsync("Parite verisi hazırlama hatası: " + ex.Message);
         }
     }
-    
+
     /// <summary>
     /// Tüm bağlı müşterilere sistem mesajı gönderir
     /// </summary>
@@ -220,15 +219,15 @@ public class ParityBroadcastService : BackgroundService
     {
         try
         {
-            await _hubContext.Clients.All.SendAsync("SystemMessage", 
+            await hubContext.Clients.All.SendAsync("SystemMessage",
                 new { Type = eventType, Message = message }, cancellationToken);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Sistem mesajı gönderme hatası");
+            logger.LogError(ex, "Sistem mesajı gönderme hatası");
         }
     }
-    
+
     /// <summary>
     /// Sistem hata durumlarında loglama ve bildirim
     /// </summary>
@@ -236,15 +235,15 @@ public class ParityBroadcastService : BackgroundService
     {
         try
         {
-            _logger.LogCritical("SİSTEM HATASI: {ErrorMessage}", errorMessage);
-            
+            logger.LogCritical("SİSTEM HATASI: {ErrorMessage}", errorMessage);
+
             // Tüm bağlı müşterilere bilgi mesajı gönderilir
-            await _hubContext.Clients.All.SendAsync("SystemMessage", 
+            await hubContext.Clients.All.SendAsync("SystemMessage",
                 "Şu anda teknik bir sorun yaşanmaktadır. Kısa süre içinde düzelecektir.");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Sistem hatası bildirimi yapılırken ikincil hata oluştu");
+            logger.LogError(ex, "Sistem hatası bildirimi yapılırken ikincil hata oluştu");
         }
     }
-} 
+}

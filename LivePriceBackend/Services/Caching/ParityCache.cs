@@ -19,8 +19,8 @@ public class ParityCache
     private readonly ICacheProvider _cacheProvider;
     
     // Cache süresi configurasyonu - DI ile dışarıdan enjekte edilebilir
-    private readonly TimeSpan _parityDataCacheTimeout = TimeSpan.FromMinutes(60); // 1 saat
-    private readonly TimeSpan _customerRulesCacheTimeout = TimeSpan.FromMinutes(30); // 30 dakika
+    private readonly TimeSpan _parityDataCacheTimeout = TimeSpan.FromMinutes(1); // 1 saat
+    private readonly TimeSpan _customerRulesCacheTimeout = TimeSpan.FromMinutes(1); // 30 dakika
     
     public ParityCache(
         IServiceProvider serviceProvider, 

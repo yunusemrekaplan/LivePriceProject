@@ -47,6 +47,9 @@ builder.Services.AddSingleton<LivePriceBackend.Services.Hub.IConnectionManagemen
 // Add HaremService configuration
 builder.Services.Configure<HaremServiceOptions>(builder.Configuration.GetSection("HaremService"));
 
+// Add XmlParityService configuration
+builder.Services.Configure<XmlParityServiceOptions>(builder.Configuration.GetSection("XmlParityService"));
+
 // Register API Rate Limiter
 builder.Services.AddSingleton<RateLimiter>();
 
@@ -87,8 +90,45 @@ builder.Services.AddHttpClient("HaremClient")
         }
     ));
 
+// Add HttpClientFactory for XmlParityService
+builder.Services.AddHttpClient("XmlParityClient")
+    .ConfigureHttpClient((serviceProvider, client) => 
+    {
+        var options = serviceProvider.GetRequiredService<IOptions<XmlParityServiceOptions>>().Value;
+        client.Timeout = TimeSpan.FromSeconds(options.TimeoutSeconds);
+    })
+    .AddTransientHttpErrorPolicy(policy => policy
+        .WaitAndRetryAsync(
+            retryCount: builder.Configuration.GetValue<int>("XmlParityService:RetryCount"),
+            sleepDurationProvider: _ => 
+                TimeSpan.FromSeconds(builder.Configuration.GetValue<int>("XmlParityService:RetryIntervalSeconds")),
+            onRetry: (_, _, retryAttempt, _) =>
+            {
+                var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
+                logger.LogWarning("XmlParityService API çağrısı başarısız oldu, {RetryAttempt}. deneme", retryAttempt);
+            }
+        )
+    )
+    .AddTransientHttpErrorPolicy(policy => policy.CircuitBreakerAsync(
+        handledEventsAllowedBeforeBreaking: 3,
+        durationOfBreak: TimeSpan.FromSeconds(30),
+        onBreak: (_, timespan) =>
+        {
+            var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
+            logger.LogError("XmlParityService API çağrısı için devre kesici devreye girdi, {TimeSpan} saniye boyunca devreden çıkacak", timespan.TotalSeconds);
+        },
+        onReset: () =>
+        {
+            var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
+            logger.LogInformation("XmlParityService API için devre kesici sıfırlandı");
+        }
+    ));
+
 // Register HaremService as a scoped service
 builder.Services.AddScoped<IHaremService, HaremService>();
+
+// Register XmlParityService as a scoped service
+builder.Services.AddScoped<IXmlParityService, XmlParityService>();
 
 // JWT Configuration
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");

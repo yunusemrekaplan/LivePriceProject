@@ -73,7 +73,7 @@ namespace LivePriceBackend.Controllers.Common
                 RefreshToken = newRefreshToken
             });
         }
-
+        
         [HttpPost("register")]
         [SwaggerOperation(Summary = "Registers a new user.")]
         [SwaggerResponse(200, "User registered successfully")]

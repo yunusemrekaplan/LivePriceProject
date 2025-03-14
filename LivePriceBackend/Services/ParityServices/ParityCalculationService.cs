@@ -6,6 +6,7 @@ namespace LivePriceBackend.Services.ParityServices;
 public interface IParityCalculationService
 {
     (decimal Ask, decimal Bid) ApplySpread(decimal rawAsk, decimal rawBid, CParityRule parityRule);
+    (decimal Ask, decimal Bid) ApplySpread(decimal rawAsk, decimal rawBid, Parity parity);
     decimal CalculateChangeRate(decimal currentBid, decimal closePrice);
     decimal RoundPrice(decimal price, int scale);
 }
@@ -69,6 +70,62 @@ public class ParityCalculationService : IParityCalculationService
         {
             _logger.LogError(ex, "Spread hesaplaması sırasında hata: Parite {ParityId}, Rule {RuleId}", 
                 parityRule.ParityId, parityRule.Id);
+            // Hata durumunda ham değerleri döndür
+            return (rawAsk, rawBid);
+        }
+
+        return (ask, bid);
+    }
+
+    /// <summary>
+    /// Parite için varsayılan spread kurallarına göre ham fiyatlara spread uygular
+    /// </summary>
+    /// <param name="rawAsk">Ham satış fiyatı</param>
+    /// <param name="rawBid">Ham alış fiyatı</param>
+    /// <param name="parity">Parite</param>
+    /// <returns>Spread uygulanmış (Ask, Bid) ikilisi</returns>
+    public (decimal Ask, decimal Bid) ApplySpread(decimal rawAsk, decimal rawBid, Parity parity)
+    {
+        decimal ask = rawAsk;
+        decimal bid = rawBid;
+
+        // Eğer spread kuralı yoksa, ham değerleri döndür
+        if (parity?.SpreadRuleType == null)
+        {
+            return (ask, bid);
+        }
+
+        var askSpread = parity.SpreadForAsk ?? 0;
+        var bidSpread = parity.SpreadForBid ?? 0;
+
+        try
+        {
+            switch (parity.SpreadRuleType.Value)
+            {
+                case SpreadRuleType.Percentage:
+                    // Yüzdelik spread: Ask'a eklenir, Bid'den çıkarılır
+                    ask = ask * (1 + askSpread / 100);
+                    bid = bid * (1 + bidSpread / 100);
+                    _logger.LogDebug("Yüzde spread uygulandı: {ParityId}, Ask: {AskSpread}%, Bid: {BidSpread}%, Sonuç: ({Ask}, {Bid})",
+                        parity.Id, askSpread, bidSpread, ask, bid);
+                    break;
+
+                case SpreadRuleType.Fixed:
+                    // Sabit spread: Ask'a eklenir, Bid'den çıkarılır
+                    ask = ask + askSpread;
+                    bid = bid + bidSpread;
+                    _logger.LogDebug("Sabit spread uygulandı: {ParityId}, Ask: +{AskSpread}, Bid: -{BidSpread}, Sonuç: ({Ask}, {Bid})",
+                        parity.Id, askSpread, bidSpread, ask, bid);
+                    break;
+
+                default:
+                    _logger.LogWarning("Bilinmeyen spread kuralı: {RuleType}", parity.SpreadRuleType);
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Spread hesaplaması sırasında hata: Parite {ParityId}", parity.Id);
             // Hata durumunda ham değerleri döndür
             return (rawAsk, rawBid);
         }
