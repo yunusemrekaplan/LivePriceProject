@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:get/get.dart';
-import 'package:signalr_netcore/signalr_client.dart';
 import 'package:logging/logging.dart';
+import 'package:signalr_netcore/signalr_client.dart';
 
 /// SignalR bağlantı servis sınıfı
 class SignalRService extends GetxService {
@@ -46,7 +46,9 @@ class SignalRService extends GetxService {
     try {
       await _disposeCurrentConnection();
 
-      final hubUrl = '$baseUrl/parityhub?apiKey=$apiKey';
+      //final hubUrl = '$baseUrl/parityhub?apiKey=$apiKey';
+      const hubUrl =
+          'http://192.168.1.107:5104/parityhub?apiKey=91e8bf92b77f4101ac6d752da8c59329';
       print('SignalR Hub URL: $hubUrl');
 
       final httpConnectionOptions = HttpConnectionOptions(
@@ -122,7 +124,6 @@ class SignalRService extends GetxService {
         _messageController.add(data);
       }
     });
-
 
     // Sistem mesajlarını dinle
     _hubConnection!.on('SystemMessage', (arguments) {
