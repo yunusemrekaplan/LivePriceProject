@@ -5,6 +5,8 @@ using LivePriceBackend.Services.Hubs;
 using LivePriceBackend.Services.ParityServices;
 using Microsoft.AspNetCore.SignalR;
 using System.Diagnostics;
+using LivePriceBackend.DTOs;
+using LivePriceBackend.DTOs.Service;
 
 namespace LivePriceBackend.Services.BackgroundServices;
 
@@ -144,25 +146,62 @@ public class ParityBroadcastService(
                                 hamData.Bid ?? 0,
                                 dbParity);
 
+                            var (defaultHigh, _) = calculationService.ApplySpread(
+                                hamData.High ?? 0,
+                                hamData.High ?? 0,
+                                dbParity);
+
+                            var (defaultLow, _) = calculationService.ApplySpread(
+                                hamData.Low ?? 0,
+                                hamData.Low ?? 0,
+                                dbParity);
+
+                            var (defaultClose, _) = calculationService.ApplySpread(
+                                hamData.Close ?? 0,
+                                hamData.Close ?? 0,
+                                dbParity);
+
                             // Eğer müşteri kuralı varsa, müşteri spread'ini uygula
                             var (finalAsk, finalBid) =
                                 parityRule != null && (parityRule.SpreadForAsk.HasValue || parityRule.SpreadForBid.HasValue)
                                     ? calculationService.ApplySpread(defaultAsk, defaultBid, parityRule)
                                     : (defaultAsk, defaultBid);
 
+                            var (finalHigh, _) =
+                                parityRule != null && (parityRule.SpreadForAsk.HasValue || parityRule.SpreadForBid.HasValue)
+                                    ? calculationService.ApplySpread(defaultHigh, defaultHigh, parityRule)
+                                    : (defaultHigh, defaultHigh);
+
+                            var (finalLow, _) =
+                                parityRule != null && (parityRule.SpreadForAsk.HasValue || parityRule.SpreadForBid.HasValue)
+                                    ? calculationService.ApplySpread(defaultLow, defaultLow, parityRule)
+                                    : (defaultLow, defaultLow);
+
+                            var (finalClose, _) =
+                                parityRule != null && (parityRule.SpreadForAsk.HasValue || parityRule.SpreadForBid.HasValue)
+                                    ? calculationService.ApplySpread(defaultClose, defaultClose, parityRule)
+                                    : (defaultClose, defaultClose);
+
                             // Değişim oranını hesapla
-                            var change = hamData.DailyChange ?? calculationService.CalculateChangeRate(finalBid, hamData.Close ?? 0);
+                            var change = hamData.DailyChange ?? calculationService.CalculateChangeRate(finalBid, finalClose);
 
                             // Scale değerini doğrula ve uygula
                             var scale = dbParity.Scale < 0 ? 4 : dbParity.Scale; // Varsayılan 4 ondalık hane
 
-                            customerParities.Add(new
+                            customerParities.Add(new ParityData
                             {
-                                dbParity.Name,
-                                Ask = calculationService.RoundPrice(finalAsk, scale),
-                                Bid = calculationService.RoundPrice(finalBid, scale),
+                                Id = dbParity.Id,
+                                Name = dbParity.Name,
+                                Symbol = dbParity.Symbol,
+                                OrderIndex = dbParity.OrderIndex,
                                 GroupName = dbParity.ParityGroup.Name,
                                 GroupId = dbParity.ParityGroupId,
+                                GroupOrderIndex = dbParity.ParityGroup.OrderIndex,
+                                Ask = calculationService.RoundPrice(finalAsk, scale),
+                                Bid = calculationService.RoundPrice(finalBid, scale),
+                                Close = calculationService.RoundPrice(finalClose, scale),
+                                High = calculationService.RoundPrice(finalHigh, scale),
+                                Low = calculationService.RoundPrice(finalLow, scale),
                                 Change = change,
                                 UpdateTime = DateTime.UtcNow
                             });

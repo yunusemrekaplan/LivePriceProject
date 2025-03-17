@@ -1,7 +1,5 @@
-using LivePriceBackend.Data;
 using LivePriceBackend.Services.Hub;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
 
 namespace LivePriceBackend.Services.Hubs;
 

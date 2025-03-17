@@ -1,5 +1,4 @@
 using LivePriceBackend.Data;
-using LivePriceBackend.Entities;
 using LivePriceBackend.Services;
 using LivePriceBackend.Services.Caching;
 using LivePriceBackend.Services.ParityServices;
@@ -7,35 +6,21 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace LivePriceBackend.Controllers.Common;
+namespace LivePriceBackend.Controllers.Admin;
 
 [AllowAnonymous]
 [ApiController]
 [Route("api/test")]
-public class TestController : ControllerBase
+public class TestController(
+    LivePriceDbContext context,
+    ILogger<TestController> logger,
+    ConnectionTracker connectionTracker,
+    ParityCache parityCache,
+    IHaremService haremService,
+    CacheInvalidator cacheInvalidator)
+    : ControllerBase
 {
-    private readonly LivePriceDbContext _context;
-    private readonly ILogger<TestController> _logger;
-    private readonly ConnectionTracker _connectionTracker;
-    private readonly ParityCache _parityCache;
-    private readonly IHaremService _haremService;
-    private readonly CacheInvalidator _cacheInvalidator;
-
-    public TestController(
-        LivePriceDbContext context,
-        ILogger<TestController> logger,
-        ConnectionTracker connectionTracker,
-        ParityCache parityCache,
-        IHaremService haremService,
-        CacheInvalidator cacheInvalidator)
-    {
-        _context = context;
-        _logger = logger;
-        _connectionTracker = connectionTracker;
-        _parityCache = parityCache;
-        _haremService = haremService;
-        _cacheInvalidator = cacheInvalidator;
-    }
+    private readonly ParityCache _parityCache = parityCache;
 
     [HttpGet("ping")]
     public IActionResult Ping()
@@ -48,7 +33,7 @@ public class TestController : ControllerBase
     {
         try
         {
-            var data = await _haremService.GetAllAsync();
+            var data = await haremService.GetAllAsync();
             return Ok(new
             {
                 count = data.Count,
@@ -57,48 +42,24 @@ public class TestController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "HaremService verisi alınırken hata oluştu");
+            logger.LogError(ex, "HaremService verisi alınırken hata oluştu");
             return StatusCode(500, new { error = "Veri alınamadı", message = ex.Message });
         }
-    }
-
-    [HttpGet("connections")]
-    public IActionResult GetConnections()
-    {
-        var customerIds = _connectionTracker.GetConnectedCustomerIds().ToList();
-        var connections = new List<object>();
-        
-        foreach(var customerId in customerIds)
-        {
-            var customer = _context.Customers.FirstOrDefault(c => c.Id == customerId);
-            connections.Add(new
-            {
-                customerId,
-                customerName = customer?.Name ?? "Unknown",
-                hasConnections = _connectionTracker.HasConnections(customerId)
-            });
-        }
-        
-        return Ok(new
-        {
-            totalConnections = connections.Count,
-            connections
-        });
     }
 
     [HttpGet("customer-rules")]
     public async Task<IActionResult> GetCustomerRules(int customerId)
     {
-        var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Id == customerId);
+        var customer = await context.Customers.FirstOrDefaultAsync(c => c.Id == customerId);
         if (customer == null)
             return NotFound(new { message = "Müşteri bulunamadı" });
         
-        var parityRules = await _context.CParityRules
+        var parityRules = await context.CParityRules
             .AsNoTracking()
             .Where(r => r.CustomerId == customerId && !r.IsDeleted)
             .ToListAsync();
         
-        var groupRules = await _context.CParityGroupRules
+        var groupRules = await context.CParityGroupRules
             .AsNoTracking()
             .Where(r => r.CustomerId == customerId && !r.IsDeleted)
             .ToListAsync();
@@ -123,12 +84,12 @@ public class TestController : ControllerBase
     {
         try
         {
-            await _cacheInvalidator.InvalidateAllCacheAsync();
+            await cacheInvalidator.InvalidateAllCacheAsync();
             return Ok(new { message = "Tüm önbellek başarıyla temizlendi" });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Önbellek temizlenirken hata oluştu");
+            logger.LogError(ex, "Önbellek temizlenirken hata oluştu");
             return StatusCode(500, new { error = "Önbellek temizlenirken bir hata oluştu", message = ex.Message });
         }
     }
@@ -138,12 +99,12 @@ public class TestController : ControllerBase
     {
         try
         {
-            await _cacheInvalidator.InvalidateCustomerCacheAsync(customerId);
+            await cacheInvalidator.InvalidateCustomerCacheAsync(customerId);
             return Ok(new { message = $"Müşteri {customerId} önbelleği başarıyla temizlendi" });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Müşteri önbelleği temizlenirken hata oluştu");
+            logger.LogError(ex, "Müşteri önbelleği temizlenirken hata oluştu");
             return StatusCode(500, new { error = "Müşteri önbelleği temizlenirken bir hata oluştu", message = ex.Message });
         }
     }
@@ -153,12 +114,12 @@ public class TestController : ControllerBase
     {
         try
         {
-            await _cacheInvalidator.InvalidateParityCacheAsync(parityId);
+            await cacheInvalidator.InvalidateParityCacheAsync(parityId);
             return Ok(new { message = $"Parite {parityId} önbelleği başarıyla temizlendi" });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Parite önbelleği temizlenirken hata oluştu");
+            logger.LogError(ex, "Parite önbelleği temizlenirken hata oluştu");
             return StatusCode(500, new { error = "Parite önbelleği temizlenirken bir hata oluştu", message = ex.Message });
         }
     }
@@ -168,12 +129,12 @@ public class TestController : ControllerBase
     {
         try
         {
-            await _cacheInvalidator.InvalidateParityGroupCacheAsync(groupId);
+            await cacheInvalidator.InvalidateParityGroupCacheAsync(groupId);
             return Ok(new { message = $"Parite grubu {groupId} önbelleği başarıyla temizlendi" });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Parite grubu önbelleği temizlenirken hata oluştu");
+            logger.LogError(ex, "Parite grubu önbelleği temizlenirken hata oluştu");
             return StatusCode(500, new { error = "Parite grubu önbelleği temizlenirken bir hata oluştu", message = ex.Message });
         }
     }
@@ -183,7 +144,7 @@ public class TestController : ControllerBase
     {
         try
         {
-            var customers = await _context.Customers.ToListAsync();
+            var customers = await context.Customers.ToListAsync();
             int count = 0;
             
             foreach (var customer in customers)
@@ -192,14 +153,70 @@ public class TestController : ControllerBase
                 count++;
             }
             
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
             
             return Ok(new { message = $"{count} müşteri aktif edildi" });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Müşteriler aktif edilirken hata oluştu");
+            logger.LogError(ex, "Müşteriler aktif edilirken hata oluştu");
             return StatusCode(500, new { error = "Müşterileri aktif etme sırasında bir hata oluştu", message = ex.Message });
         }
+    }
+
+    [HttpGet("connected-customers")]
+    public IActionResult GetConnectedCustomers()
+    {
+        var customerIds = connectionTracker.GetConnectedCustomerIds().ToList();
+        var customers = new List<object>();
+        
+        foreach(var customerId in customerIds)
+        {
+            var customer = context.Customers.FirstOrDefault(c => c.Id == customerId);
+            customers.Add(new
+            {
+                customerId,
+                customerName = customer?.Name ?? "Unknown",
+                connectionCount = connectionTracker.GetConnectionCount(customerId)
+            });
+        }
+        
+        return Ok(new
+        {
+            totalCustomers = customers.Count,
+            customers
+        });
+    }
+
+    [HttpGet("active-connections")]
+    public IActionResult GetActiveConnections()
+    {
+        var connections = new List<object>();
+        var customerIds = connectionTracker.GetConnectedCustomerIds().ToList();
+        
+        foreach(var customerId in customerIds)
+        {
+            var customer = context.Customers.FirstOrDefault(c => c.Id == customerId);
+            var customerConnections = connectionTracker.GetCustomerConnections(customerId);
+            
+            foreach(var connectionId in customerConnections)
+            {
+                connections.Add(new
+                {
+                    connectionId,
+                    customerId,
+                    customerName = customer?.Name ?? "Unknown",
+                    customerApiKey = customer?.ApiKey ?? "Unknown",
+                    connectionTime = connectionTracker.GetConnectionTime(connectionId),
+                    lastActivityTime = connectionTracker.GetLastActivityTime(connectionId)
+                });
+            }
+        }
+        
+        return Ok(new
+        {
+            totalConnections = connections.Count,
+            connections = connections.OrderByDescending(c => ((DateTime)((dynamic)c).connectionTime))
+        });
     }
 } 

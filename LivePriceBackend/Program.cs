@@ -167,8 +167,7 @@ builder.Services.AddCors(options =>
             .SetIsOriginAllowed(_ => true)
             .AllowAnyMethod()
             .AllowAnyHeader()
-            .AllowCredentials()
-            .SetIsOriginAllowed(origin => true); // Postman için gerekli
+            .AllowCredentials();
     });
 });
 

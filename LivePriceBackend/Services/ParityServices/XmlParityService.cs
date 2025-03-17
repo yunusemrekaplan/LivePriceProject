@@ -1,5 +1,7 @@
 using System.Xml;
 using System.Globalization;
+using LivePriceBackend.DTOs;
+using LivePriceBackend.DTOs.Service;
 using LivePriceBackend.Entities;
 using LivePriceBackend.Exceptions;
 using Microsoft.Extensions.Options;

@@ -1,4 +1,4 @@
-﻿namespace LivePriceBackend.Entities;
+﻿namespace LivePriceBackend.DTOs.Service;
 
 public class ParityHamData
 {
