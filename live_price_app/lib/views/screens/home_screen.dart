@@ -33,8 +33,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _screens = [
-      CurrencyScreen(onAddFavoritePressed: _showAddFavoriteDialog),
-      GoldScreen(onAddFavoritePressed: _showAddFavoriteDialog),
+      CurrencyScreen(),
+      GoldScreen(),
       const PortfolioScreen(),
       const MoreScreen(),
     ];

@@ -1,37 +1,54 @@
 import 'package:flutter/material.dart';
-import '../../models/parity_model.dart';
-import '../widgets/parity_list_item.dart';
-import '../widgets/favorites_band.dart';
+import 'package:get/get.dart';
+import 'package:live_price_app/views/widgets/favorites_band/favorites_band.dart';
+import 'package:live_price_app/views/widgets/pair_list_view.dart';
+import '../../controllers/pairs_controller.dart';
 
 class GoldScreen extends StatelessWidget {
-  final VoidCallback onAddFavoritePressed;
-
-  const GoldScreen({super.key, required this.onAddFavoritePressed});
+  const GoldScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Örnek veri
-    final goldItems = GoldItem.getDummyData();
-    final favorites = GoldItem.getFavoritesData();
+    // GetX controller
+    final controller = Get.find<PairsController>();
 
-    return Column(
-      children: [
-        // Favoriler bandı
-        GoldFavoritesBand(
-          favorites: favorites,
-          onAddPressed: onAddFavoritePressed,
-        ),
+    return Obx(() {
+      if (controller.isLoading.value && controller.goldPairs.isEmpty) {
+        return const Center(child: CircularProgressIndicator());
+      }
 
-        // Altın listesi
-        Expanded(
-          child: ListView.builder(
-            itemCount: goldItems.length,
-            itemBuilder: (context, index) {
-              return GoldListItem(goldItem: goldItems[index]);
-            },
+      if (controller.goldPairs.isEmpty) {
+        return const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.monetization_on,
+                size: 64,
+                color: Colors.grey,
+              ),
+              SizedBox(height: 16),
+              Text(
+                'Henüz altın verisi yok',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.grey,
+                ),
+              ),
+            ],
           ),
-        ),
-      ],
-    );
+        );
+      }
+
+      return Column(
+        children: [
+          // Favoriler bandı
+          const FavoritesBand(),
+
+          // Parite listesi
+          PairListView(pairs: controller.goldPairs),
+        ],
+      );
+    });
   }
 }

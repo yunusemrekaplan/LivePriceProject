@@ -46,11 +46,9 @@ class Pair {
       close: json['close'] != null ? (json['close'] as num).toDouble() : null,
       high: json['high'] != null ? (json['high'] as num).toDouble() : null,
       low: json['low'] != null ? (json['low'] as num).toDouble() : null,
-      change:
-          json['change'] != null ? (json['change'] as num).toDouble() : null,
-      updateTime: json['updateTime'] != null
-          ? DateTime.tryParse(json['updateTime'].toString())
-          : null,
+      change: json['change'] != null ? (json['change'] as num).toDouble() : null,
+      updateTime:
+          json['updateTime'] != null ? DateTime.tryParse(json['updateTime'].toString()) : null,
     );
   }
 
@@ -74,69 +72,24 @@ class Pair {
     };
   }
 
-  // Pair nesnesini Parity modeline dönüştür (UI kısmı için)
-  Parity toParity() {
-    return Parity(
-      symbol: symbol ?? 'Bilinmiyor',
-      buyPrice: bid ?? 0.0,
-      sellPrice: ask ?? 0.0,
-      changePercentage: change ?? 0.0,
-      isIncreasing: change != null ? change! > 0 : false,
-      updateTime: updateTime != null
-          ? '${updateTime!.hour.toString().padLeft(2, '0')}:${updateTime!.minute.toString().padLeft(2, '0')}'
-          : '--:--',
-    );
+  // UI için yardımcı getter metodları
+  String get displaySymbol {
+    if (groupId == 2) {
+      return symbol ?? 'Bilinmiyor';
+    } else {
+      return name ?? 'Bilinmiyor';
+    }
   }
 
-  // Pair nesnesini GoldItem modeline dönüştür (UI kısmı için)
-  GoldItem toGoldItem() {
-    return GoldItem(
-      symbol: symbol ?? 'Bilinmiyor',
-      buyPrice: bid ?? 0.0,
-      sellPrice: ask ?? 0.0,
-      changePercentage: change ?? 0.0,
-      isIncreasing: change != null ? change! > 0 : false,
-      updateTime: updateTime != null
-          ? '${updateTime!.hour.toString().padLeft(2, '0')}:${updateTime!.minute.toString().padLeft(2, '0')}'
-          : '--:--',
-    );
-  }
-}
+  double get buyPrice => ask ?? 0.0;
 
-// Parity model sınıfı (UI için)
-class Parity {
-  final String symbol;
-  final double buyPrice;
-  final double sellPrice;
-  final double changePercentage;
-  final bool isIncreasing;
-  final String updateTime;
+  double get sellPrice => bid ?? 0.0;
 
-  Parity({
-    required this.symbol,
-    required this.buyPrice,
-    required this.sellPrice,
-    required this.changePercentage,
-    required this.isIncreasing,
-    required this.updateTime,
-  });
-}
+  double get changePercentage => change ?? 0.0;
 
-// GoldItem model sınıfı (UI için)
-class GoldItem {
-  final String symbol;
-  final double buyPrice;
-  final double sellPrice;
-  final double changePercentage;
-  final bool isIncreasing;
-  final String updateTime;
+  bool get isIncreasing => change != null ? change! > 0 : false;
 
-  GoldItem({
-    required this.symbol,
-    required this.buyPrice,
-    required this.sellPrice,
-    required this.changePercentage,
-    required this.isIncreasing,
-    required this.updateTime,
-  });
+  String get displayUpdateTime => updateTime != null
+      ? '${updateTime!.hour.toString().padLeft(2, '0')}:${updateTime!.minute.toString().padLeft(2, '0')}'
+      : '--:--';
 }

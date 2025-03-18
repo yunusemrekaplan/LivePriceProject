@@ -1,35 +1,55 @@
 import 'package:flutter/material.dart';
-import 'package:live_price_app/views/widgets/parity_list_view.dart';
+import 'package:get/get.dart';
+import 'package:live_price_app/views/widgets/favorites_band/favorites_band.dart';
 
-import '../../models/parity_model.dart';
-import '../widgets/favorites_band.dart';
+import '../../controllers/pairs_controller.dart';
+import '../widgets/pair_list_view.dart';
 
 class CurrencyScreen extends StatelessWidget {
-  final VoidCallback onAddFavoritePressed;
-
-  const CurrencyScreen({super.key, required this.onAddFavoritePressed});
+  const CurrencyScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Örnek veri
-    final parities = Parity.getDummyData();
-    final favorites = Parity.getFavoritesData();
+    // GetX controller
+    final controller = Get.find<PairsController>();
 
-    return Column(
-      children: [
-        // Favoriler bandı
-        FavoritesBand(
-          favorites: favorites,
-          onAddPressed: onAddFavoritePressed,
-        ),
+    return Obx(() {
+      if (controller.isLoading.value && controller.currencyPairs.isEmpty) {
+        return const Center(child: CircularProgressIndicator());
+      }
 
-        // Parite listesi
-        Expanded(
-          child: SingleChildScrollView(
-            child: ParityListView(parities: parities),
+      if (controller.currencyPairs.isEmpty) {
+        return const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.currency_exchange,
+                size: 64,
+                color: Colors.grey,
+              ),
+              SizedBox(height: 16),
+              Text(
+                'Henüz döviz verisi yok',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.grey,
+                ),
+              ),
+            ],
           ),
-        ),
-      ],
-    );
+        );
+      }
+
+      return Column(
+        children: [
+          // Favoriler bandı
+          const FavoritesBand(),
+
+          // Parite listesi
+          PairListView(pairs: controller.currencyPairs),
+        ],
+      );
+    });
   }
 }

@@ -1,12 +1,18 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:get/get.dart';
 import 'package:logging/logging.dart';
 import 'package:signalr_netcore/signalr_client.dart';
+import '../models/pair.dart';
 
 /// SignalR bağlantı servis sınıfı
 class SignalRService extends GetxService {
   static SignalRService get to => Get.find();
+
+  // Hub URL ve API Key
+  String _baseUrl = '';
+  String _apiKey = '';
 
   // Bağlantı durumunu izleyebilmek için RxBool
   final isConnected = false.obs;
@@ -40,15 +46,16 @@ class SignalRService extends GetxService {
   Future<void> initConnection(String baseUrl, String apiKey) async {
     if (isConnecting.value) return;
 
+    _baseUrl = baseUrl;
+    _apiKey = apiKey;
+
     isConnecting.value = true;
     connectionError.value = null;
 
     try {
       await _disposeCurrentConnection();
 
-      //final hubUrl = '$baseUrl/parityhub?apiKey=$apiKey';
-      const hubUrl =
-          'http://192.168.1.107:5104/parityhub?apiKey=91e8bf92b77f4101ac6d752da8c59329';
+      final hubUrl = '$baseUrl/parityhub?apiKey=$apiKey';
       print('SignalR Hub URL: $hubUrl');
 
       final httpConnectionOptions = HttpConnectionOptions(
@@ -106,10 +113,20 @@ class SignalRService extends GetxService {
     }
   }
 
+  /// Bağlantıyı yeniden başlatır
+  Future<void> reconnect() async {
+    if (_baseUrl.isNotEmpty && _apiKey.isNotEmpty) {
+      await initConnection(_baseUrl, _apiKey);
+    } else {
+      print('Bağlantı yenilenemedi: baseUrl veya apiKey eksik');
+      _systemMessageController.add('Bağlantı yenilenemedi: Ayarlar eksik');
+    }
+  }
+
   void _registerHubHandlers() {
     if (_hubConnection == null) return;
 
-    // ReceiveParities metodunu dinle
+    // ReceiveParities metodunu dinle - Toplu parite verisi için
     _hubConnection!.on('ReceiveParities', (arguments) {
       if (arguments != null && arguments.isNotEmpty) {
         final data = arguments.first;
@@ -119,6 +136,22 @@ class SignalRService extends GetxService {
         print('Veri İçeriği:');
         print(data);
         print('====================================================');
+
+        lastReceivedData.value = data;
+        _messageController.add(data);
+      }
+    });
+
+    // ReceiveMessage metodunu dinle - Tekil parite güncellemeleri için
+    _hubConnection!.on('ReceiveMessage', (arguments) {
+      if (arguments != null && arguments.isNotEmpty) {
+        final data = arguments.first;
+        print('------------------ PARİTE GÜNCELLEMESİ ------------------');
+        print('Zaman: ${DateTime.now()}');
+        print('Veri Tipi: ${data.runtimeType}');
+        print('Veri İçeriği:');
+        print(data);
+        print('------------------------------------------------------');
 
         lastReceivedData.value = data;
         _messageController.add(data);

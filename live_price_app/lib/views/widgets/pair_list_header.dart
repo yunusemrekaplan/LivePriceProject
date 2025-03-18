@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:live_price_app/config/theme.dart';
 
-class ParityListHeader extends StatelessWidget {
-  const ParityListHeader({super.key});
+class PairListHeader extends StatelessWidget {
+  const PairListHeader({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+    return const Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Row(
         children: [
-          const Expanded(
+          Expanded(
             flex: 3,
             child: Text(
               'Parite',
@@ -22,12 +22,12 @@ class ParityListHeader extends StatelessWidget {
               ),
             ),
           ),
-          const Expanded(
+          Expanded(
             flex: 2,
             child: SizedBox(),
           ),
           Row(
-            children: const [
+            children: [
               SizedBox(
                 width: 80,
                 child: Text(
