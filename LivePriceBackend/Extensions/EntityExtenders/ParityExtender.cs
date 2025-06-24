@@ -13,6 +13,7 @@ public static class ParityExtender
             Name = parity.Name,
             Symbol = parity.Symbol,
             RawSymbol = parity.RawSymbol,
+            RawMarketCode = parity.RawMarketCode,
             IsEnabled = parity.IsEnabled,
             OrderIndex = parity.OrderIndex,
             Scale = parity.Scale,
@@ -34,6 +35,7 @@ public static class ParityExtender
             Name = parityCreateModel.Name,
             Symbol = parityCreateModel.Symbol,
             RawSymbol = parityCreateModel.RawSymbol,
+            RawMarketCode = parityCreateModel.RawMarketCode,
             IsEnabled = parityCreateModel.IsEnabled,
             OrderIndex = parityCreateModel.OrderIndex,
             Scale = parityCreateModel.Scale,
@@ -49,6 +51,7 @@ public static class ParityExtender
         parity.Name = parityUpdateModel.Name ?? parity.Name;
         parity.Symbol = parityUpdateModel.Symbol ?? parity.Symbol;
         parity.RawSymbol = parityUpdateModel.RawSymbol ?? parity.RawSymbol;
+        parity.RawMarketCode = parityUpdateModel.RawMarketCode;
         parity.IsEnabled = parityUpdateModel.IsEnabled;
         parity.OrderIndex = parityUpdateModel.OrderIndex;
         parity.Scale = parityUpdateModel.Scale;

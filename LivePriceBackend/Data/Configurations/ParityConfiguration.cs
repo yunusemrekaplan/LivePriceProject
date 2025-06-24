@@ -23,6 +23,9 @@ public class ParityConfiguration : IEntityTypeConfiguration<Parity>
         builder.Property(p => p.RawSymbol)
             .IsRequired()
             .HasMaxLength(50);
+        
+        builder.Property(p => p.RawMarketCode)
+            .IsRequired();
 
         builder.Property(p => p.IsEnabled)
             .IsRequired()

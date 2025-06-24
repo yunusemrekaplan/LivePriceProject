@@ -9,6 +9,7 @@ public class Parity : AuditableEntity
     public required string Name { get; set; } // Örneğin: "Gram Altın"
     public required string Symbol { get; set; } // Örneğin: "XAU/TRY"
     public required string RawSymbol { get; set; }
+    public int RawMarketCode { get; set; }
     public bool IsEnabled { get; set; }
     public int OrderIndex { get; set; }
     public int Scale { get; set; } = 2;

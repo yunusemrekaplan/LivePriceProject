@@ -21,6 +21,7 @@ public interface IXmlParityService
 {
     Task<List<ParityHamData>> GetAllAsync(CancellationToken cancellationToken = default);
     Task<List<ParityHamData>> GetBySymbolsAsync(string[] symbols, CancellationToken cancellationToken = default);
+    Task<List<ParityHamData>> GetByMarketAndSymbolsAsync(int marketCode, string[] symbols, CancellationToken cancellationToken = default);
 }
 
 public class XmlParityService(
@@ -86,26 +87,72 @@ public class XmlParityService(
 
     public async Task<List<ParityHamData>> GetBySymbolsAsync(string[] symbols, CancellationToken cancellationToken = default)
     {
+        // Varsayılan market kodu ile çağır
+        return await GetByMarketAndSymbolsAsync(1, symbols, cancellationToken);
+    }
+
+    public async Task<List<ParityHamData>> GetByMarketAndSymbolsAsync(int marketCode, string[] symbols, CancellationToken cancellationToken = default)
+    {
         if (symbols == null || symbols.Length == 0)
         {
             throw new ArgumentException("En az bir sembol belirtilmelidir", nameof(symbols));
         }
 
-        var url = $"{_options.BaseUrl}&sembol=({string.Join(',', symbols)})";
-        var httpClient = httpClientFactory.CreateClient("XmlParityClient");
-
-        var response = await httpClient.GetAsync(url, cancellationToken);
-
-        if (!response.IsSuccessStatusCode)
+        if (marketCode <= 0)
         {
-            throw new ExternalServiceException(ServiceName, $"API isteği başarısız: {response.StatusCode}");
+            throw new ArgumentException("Market kodu geçerli değil", nameof(marketCode));
         }
 
-        var content = await response.Content.ReadAsStringAsync(cancellationToken);
-        var document = new XmlDocument();
-        document.LoadXml(content);
+        var url = $"{_options.BaseUrl}?piyasaKod={marketCode}&sembol=({string.Join(',', symbols)})";
+        var httpClient = httpClientFactory.CreateClient("XmlParityClient");
 
-        return ParseXmlData(document);
+        try
+        {
+            var response = await httpClient.GetAsync(url, cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                logger.LogWarning("Market {MarketCode} için API isteği başarısız: {StatusCode}", 
+                    marketCode, response.StatusCode);
+                
+                throw new ExternalServiceException(ServiceName, 
+                    $"Market {marketCode} için API isteği başarısız: {response.StatusCode}");
+            }
+
+            var content = await response.Content.ReadAsStringAsync(cancellationToken);
+            var document = new XmlDocument();
+            document.LoadXml(content);
+
+            var parities = ParseXmlData(document);
+            logger.LogInformation("Market {MarketCode} için {Count} parite çekildi", marketCode, parities.Count);
+            
+            return parities;
+        }
+        catch (XmlException ex)
+        {
+            logger.LogError(ex, "Market {MarketCode} için XML ayrıştırma hatası", marketCode);
+            throw new ExternalServiceException(ServiceName, $"Market {marketCode} için XML yanıtı geçersiz format", ex);
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError(ex, "Market {MarketCode} için API isteği sırasında hata", marketCode);
+            throw new ExternalServiceException(ServiceName, $"Market {marketCode} için API isteği hatası: {ex.Message}", ex);
+        }
+        catch (TaskCanceledException ex)
+        {
+            logger.LogError(ex, "Market {MarketCode} için API isteği zaman aşımı", marketCode);
+            throw new ExternalServiceException(ServiceName, $"Market {marketCode} için API zaman aşımı", ex);
+        }
+        catch (ExternalServiceException)
+        {
+            // Bu hatayı yukarıda fırlatıyoruz, tekrar sarmalama
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Market {MarketCode} için beklenmeyen hata", marketCode);
+            throw new ExternalServiceException(ServiceName, $"Market {marketCode} için beklenmeyen hata: {ex.Message}", ex);
+        }
     }
 
     private List<ParityHamData> ParseXmlData(XmlDocument document)

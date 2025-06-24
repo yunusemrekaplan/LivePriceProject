@@ -7,6 +7,7 @@ public class ParityCreateModel
     public required string Name { get; set; }
     public required string Symbol { get; set; }
     public required string RawSymbol { get; set; }
+    public int RawMarketCode { get; set; }
     public bool IsEnabled { get; set; }
     public int OrderIndex { get; set; }
     public int Scale { get; set; }

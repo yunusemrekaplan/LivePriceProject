@@ -1,11 +1,9 @@
-using LivePriceBackend.Entities;
 using LivePriceBackend.Exceptions;
 using LivePriceBackend.Services.Caching;
 using LivePriceBackend.Services.Hubs;
 using LivePriceBackend.Services.ParityServices;
 using Microsoft.AspNetCore.SignalR;
 using System.Diagnostics;
-using LivePriceBackend.DTOs;
 using LivePriceBackend.DTOs.Service;
 
 namespace LivePriceBackend.Services.BackgroundServices;
@@ -64,37 +62,44 @@ public class ParityBroadcastService(
             var customerParityRules = await parityCache.GetParityRulesAsync(connectedCustomerIds);
             var customerGroupRules = await parityCache.GetGroupRulesAsync(connectedCustomerIds);
 
-            // Sadece gerekli sembolleri çek
-            var symbols = dbParities.Select(p => p.RawSymbol).Distinct().ToArray();
-            if (symbols.Length == 0)
-                return; // Hiç sembol yok
+            // Pariteleri market kodlarına göre gruplandır
+            var marketGroups = dbParities
+                .GroupBy(p => p.RawMarketCode)
+                .ToDictionary(g => g.Key, g => g.Select(p => p.RawSymbol).Distinct().ToArray());
 
-            logger.LogInformation("symbols: {symbol}", symbols.Length);
+            if (marketGroups.Count == 0)
+                return; // Hiç market yok
+
+            logger.LogInformation("Toplam {MarketCount} farklı market için veri çekilecek", marketGroups.Count);
 
             // XmlParityService'den ham verileri çek
             using var scope = serviceProvider.CreateScope();
             var xmlParityService = scope.ServiceProvider.GetRequiredService<IXmlParityService>();
 
-            List<ParityHamData> hamParities;
-            try
+            List<ParityHamData> hamParities = new();
+            foreach (var (marketCode, symbols) in marketGroups)
             {
-                hamParities = await xmlParityService.GetBySymbolsAsync(symbols, stoppingToken);
+                if (symbols.Length == 0)
+                    continue;
 
-                // Sadece veri çekilemediğinde logla
-                if (hamParities.Count == 0)
+                logger.LogInformation("Market {MarketCode} için {SymbolCount} sembol çekiliyor", marketCode, symbols.Length);
+
+                try
                 {
-                    logger.LogWarning("XmlParityService'den veri alınamadı");
+                    // Market kodu ve semboller ile veri çek
+                    var marketParities = await xmlParityService.GetByMarketAndSymbolsAsync(marketCode, symbols, stoppingToken);
+                    hamParities.AddRange(marketParities);
                 }
-            }
-            catch (ExternalServiceException ex)
-            {
-                logger.LogError(ex, "XmlParityService veri çekme hatası: {Message}", ex.Message);
-                await NotifyCustomersAsync("VeriKaynağıHatası", "Dış servis veri kaynağı hatası", stoppingToken);
-                return;
+                catch (ExternalServiceException ex)
+                {
+                    logger.LogError(ex, "Market {MarketCode} için veri çekme hatası: {Message}", marketCode, ex.Message);
+                    // Hata durumunda diğer marketlerle devam et
+                }
             }
 
             if (hamParities.Count == 0)
             {
+                logger.LogWarning("Hiçbir marketten veri çekilemedi");
                 await NotifyCustomersAsync("VeriYok", "Parite verisi bulunamadı", stoppingToken);
                 return;
             }

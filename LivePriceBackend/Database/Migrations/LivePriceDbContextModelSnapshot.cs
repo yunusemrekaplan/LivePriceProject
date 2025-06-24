@@ -233,6 +233,9 @@ namespace LivePriceBackend.Database.Migrations
                     b.Property<int>("ParityGroupId")
                         .HasColumnType("int");
 
+                    b.Property<int>("RawMarketCode")
+                        .HasColumnType("int");
+
                     b.Property<string>("RawSymbol")
                         .IsRequired()
                         .HasMaxLength(50)
